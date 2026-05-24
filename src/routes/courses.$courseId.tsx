@@ -72,7 +72,7 @@ function CourseDetail() {
           <div className="mt-10">
             <h2 className="text-xl font-semibold">课程大纲</h2>
             <Card className="mt-4 divide-y divide-border/60 border-border/60 p-0">
-              {course.lessonsList.map((l, i) => (
+              {course.lessonsList.map((l: { title: string; duration: string }, i: number) => (
                 <div
                   key={l.title}
                   className="flex items-center gap-4 p-4 transition-colors hover:bg-secondary/50"
