@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DiscussionsRouteImport } from './routes/discussions'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CoursesCourseIdRouteImport } from './routes/courses.$courseId'
 
+const DiscussionsRoute = DiscussionsRouteImport.update({
+  id: '/discussions',
+  path: '/discussions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoursesRoute = CoursesRouteImport.update({
   id: '/courses',
   path: '/courses',
@@ -32,34 +38,45 @@ const CoursesCourseIdRoute = CoursesCourseIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/courses': typeof CoursesRouteWithChildren
+  '/discussions': typeof DiscussionsRoute
   '/courses/$courseId': typeof CoursesCourseIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/courses': typeof CoursesRouteWithChildren
+  '/discussions': typeof DiscussionsRoute
   '/courses/$courseId': typeof CoursesCourseIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/courses': typeof CoursesRouteWithChildren
+  '/discussions': typeof DiscussionsRoute
   '/courses/$courseId': typeof CoursesCourseIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/courses' | '/courses/$courseId'
+  fullPaths: '/' | '/courses' | '/discussions' | '/courses/$courseId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/courses' | '/courses/$courseId'
-  id: '__root__' | '/' | '/courses' | '/courses/$courseId'
+  to: '/' | '/courses' | '/discussions' | '/courses/$courseId'
+  id: '__root__' | '/' | '/courses' | '/discussions' | '/courses/$courseId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CoursesRoute: typeof CoursesRouteWithChildren
+  DiscussionsRoute: typeof DiscussionsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/discussions': {
+      id: '/discussions'
+      path: '/discussions'
+      fullPath: '/discussions'
+      preLoaderRoute: typeof DiscussionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/courses': {
       id: '/courses'
       path: '/courses'
@@ -98,7 +115,18 @@ const CoursesRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CoursesRoute: CoursesRouteWithChildren,
+  DiscussionsRoute: DiscussionsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
