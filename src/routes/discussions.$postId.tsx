@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { posts, replies } from "@/lib/mock-data";
+import { posts, replies, type Reply } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/discussions/$postId")({
   loader: ({ params }) => {
@@ -90,7 +90,7 @@ function PostDetail() {
           回复 <span className="text-muted-foreground">({postReplies.length})</span>
         </h2>
         <div className="mt-4 space-y-3">
-          {postReplies.map((r) => (
+          {postReplies.map((r: Reply) => (
             <Card key={r.id} className="flex gap-3 border-border/60 p-5">
               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary/10 font-medium text-primary">
                 {r.authorAvatar}
