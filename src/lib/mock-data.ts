@@ -9,7 +9,7 @@ export type Course = {
   students: number;
   category: string;
   emoji: string;
-  lessonsList: { title: string; duration: string }[];
+  lessonsList: { title: string; duration: string; videoUrl?: string }[];
 };
 
 export type Post = {

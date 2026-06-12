@@ -1,12 +1,13 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { ArrowLeft, PlayCircle, Clock, Users, BookOpen } from "lucide-react";
+import { useState } from "react";
+import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { courses } from "@/lib/mock-data";
+import { courses, type Course } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/courses/$courseId")({
-  loader: ({ params }) => {
+  loader: ({ params }): { course: Course } => {
     const course = courses.find((c) => c.id === params.courseId);
     if (!course) throw notFound();
     return { course };
@@ -36,7 +37,10 @@ export const Route = createFileRoute("/courses/$courseId")({
 });
 
 function CourseDetail() {
-  const { course } = Route.useLoaderData();
+  const { course } = Route.useLoaderData() as { course: Course };
+  const firstPlayable = course.lessonsList.findIndex((l) => l.videoUrl);
+  const [activeIdx, setActiveIdx] = useState(firstPlayable >= 0 ? firstPlayable : 0);
+  const activeLesson = course.lessonsList[activeIdx];
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
@@ -69,21 +73,56 @@ function CourseDetail() {
 
           <p className="mt-6 text-lg text-muted-foreground">{course.description}</p>
 
+          {activeLesson && (
+            <div className="mt-8">
+              <div className="overflow-hidden rounded-xl border border-border/60 bg-black">
+                {activeLesson.videoUrl ? (
+                  <video
+                    key={activeLesson.videoUrl}
+                    src={activeLesson.videoUrl}
+                    controls
+                    playsInline
+                    preload="metadata"
+                    className="aspect-video w-full"
+                  />
+                ) : (
+                  <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 text-muted-foreground">
+                    <Lock className="h-8 w-8" />
+                    <span className="text-sm">该课时暂未上传视频</span>
+                  </div>
+                )}
+              </div>
+              <div className="mt-3 flex items-baseline justify-between">
+                <h3 className="text-lg font-semibold">{activeLesson.title}</h3>
+                <span className="text-sm text-muted-foreground">{activeLesson.duration}</span>
+              </div>
+            </div>
+          )}
+
           <div className="mt-10">
             <h2 className="text-xl font-semibold">课程大纲</h2>
             <Card className="mt-4 divide-y divide-border/60 border-border/60 p-0">
-              {course.lessonsList.map((l: { title: string; duration: string }, i: number) => (
-                <div
+              {course.lessonsList.map((l, i) => (
+                <button
                   key={l.title}
-                  className="flex items-center gap-4 p-4 transition-colors hover:bg-secondary/50"
+                  type="button"
+                  onClick={() => setActiveIdx(i)}
+                  className={
+                    "flex w-full items-center gap-4 p-4 text-left transition-colors " +
+                    (i === activeIdx ? "bg-secondary/70" : "hover:bg-secondary/50")
+                  }
                 >
                   <span className="grid h-8 w-8 place-items-center rounded-full bg-secondary text-sm font-medium text-secondary-foreground">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <PlayCircle className="h-5 w-5 text-primary" />
+                  {l.videoUrl ? (
+                    <PlayCircle className="h-5 w-5 text-primary" />
+                  ) : (
+                    <Lock className="h-5 w-5 text-muted-foreground" />
+                  )}
                   <span className="flex-1 font-medium">{l.title}</span>
                   <span className="text-sm text-muted-foreground">{l.duration}</span>
-                </div>
+                </button>
               ))}
             </Card>
           </div>
