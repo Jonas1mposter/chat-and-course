@@ -4,10 +4,10 @@ import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { courses } from "@/lib/mock-data";
+import { courses, type Course } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/courses/$courseId")({
-  loader: ({ params }) => {
+  loader: ({ params }): { course: Course } => {
     const course = courses.find((c) => c.id === params.courseId);
     if (!course) throw notFound();
     return { course };
