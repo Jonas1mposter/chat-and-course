@@ -37,7 +37,7 @@ export const Route = createFileRoute("/courses/$courseId")({
 });
 
 function CourseDetail() {
-  const { course } = Route.useLoaderData();
+  const { course } = Route.useLoaderData() as { course: Course };
   const firstPlayable = course.lessonsList.findIndex((l) => l.videoUrl);
   const [activeIdx, setActiveIdx] = useState(firstPlayable >= 0 ? firstPlayable : 0);
   const activeLesson = course.lessonsList[activeIdx];
