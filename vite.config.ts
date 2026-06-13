@@ -10,7 +10,7 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 // Build a plain Node server for self-hosting on a VM instead of a Worker bundle.
 export default defineConfig({
   nitro: {
-    preset: "node-server",
+    defaultPreset: "node-server",
   },
   tanstackStart: {
     server: { entry: "server" },
