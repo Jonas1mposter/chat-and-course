@@ -1,26 +1,17 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Heart, MessageSquare, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import { posts, replies, type Reply } from "@/lib/mock-data";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import type { Post, Reply } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/discussions/$postId")({
-  loader: ({ params }) => {
-    const post = posts.find((p) => p.id === params.postId);
-    if (!post) throw notFound();
-    const postReplies = replies.filter((r) => r.postId === params.postId);
-    return { post, postReplies };
-  },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.post.title} — 讨论区` },
-          { name: "description", content: loaderData.post.excerpt },
-        ]
-      : [],
-  }),
+  head: () => ({ meta: [{ title: "帖子详情 — 讨论区" }] }),
   component: PostDetail,
   notFoundComponent: () => (
     <div className="mx-auto max-w-2xl px-6 py-24 text-center">
@@ -38,7 +29,22 @@ export const Route = createFileRoute("/discussions/$postId")({
 });
 
 function PostDetail() {
-  const { post, postReplies } = Route.useLoaderData();
+  const { postId } = Route.useParams();
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["post", postId],
+    queryFn: () => api<{ post: Post; replies: Reply[] }>(`/api/posts/${postId}`),
+  });
+  const [content, setContent] = useState("");
+  const reply = useMutation({
+    mutationFn: (c: string) => api(`/api/posts/${postId}/replies`, { method: "POST", body: { content: c } }),
+    onSuccess: () => { setContent(""); qc.invalidateQueries({ queryKey: ["post", postId] }); },
+  });
+
+  if (isLoading) return <main className="mx-auto max-w-2xl px-6 py-24 text-center text-muted-foreground">加载中…</main>;
+  if (error || !data) return <main className="mx-auto max-w-2xl px-6 py-24 text-center text-muted-foreground">{error ? `加载失败：${(error as Error).message}` : "帖子不存在"}</main>;
+  const { post, replies: postReplies } = data;
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
@@ -119,13 +125,32 @@ function PostDetail() {
 
         <Card className="mt-6 border-border/60 p-5">
           <div className="text-sm font-medium">写下你的回复</div>
-          <Textarea
-            placeholder="友善表达，言之有物……"
-            className="mt-3 min-h-[100px] resize-none"
-          />
-          <div className="mt-3 flex justify-end">
-            <Button>发布回复</Button>
-          </div>
+          {user ? (
+            <>
+              <Textarea
+                placeholder="友善表达，言之有物……"
+                className="mt-3 min-h-[100px] resize-none"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+              />
+              {reply.error && (
+                <p className="mt-2 text-sm text-destructive">{(reply.error as Error).message}</p>
+              )}
+              <div className="mt-3 flex justify-end">
+                <Button
+                  disabled={!content.trim() || reply.isPending}
+                  onClick={() => reply.mutate(content.trim())}
+                >
+                  {reply.isPending ? "发布中…" : "发布回复"}
+                </Button>
+              </div>
+            </>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">
+              <Link to="/auth" search={{ mode: "login", redirect: `/discussions/${postId}` }} className="text-primary hover:underline">登录</Link>{" "}
+              后才能回复。
+            </p>
+          )}
         </Card>
       </section>
     </main>
