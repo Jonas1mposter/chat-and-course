@@ -38,11 +38,19 @@ function DiscussionsPage() {
           <h1 className="text-4xl font-semibold tracking-tight">讨论区</h1>
           <p className="mt-2 text-muted-foreground">提问、分享、复盘 — 让经验流动起来。</p>
         </div>
-        <Button asChild>
-          <Link to={user ? "/discussions/new" : "/auth"} search={user ? undefined : { mode: "login", redirect: "/discussions/new" }}>
-            <Plus className="mr-1 h-4 w-4" /> 发布新帖
-          </Link>
-        </Button>
+        {user ? (
+          <Button asChild>
+            <Link to="/discussions/new">
+              <Plus className="mr-1 h-4 w-4" /> 发布新帖
+            </Link>
+          </Button>
+        ) : (
+          <Button asChild>
+            <Link to="/auth" search={{ mode: "login", redirect: "/discussions/new" }}>
+              <Plus className="mr-1 h-4 w-4" /> 发布新帖
+            </Link>
+          </Button>
+        )}
       </header>
 
       {error && (
