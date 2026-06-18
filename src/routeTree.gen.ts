@@ -13,8 +13,11 @@ import { Route as DiscussionsRouteImport } from './routes/discussions'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DiscussionsNewRouteImport } from './routes/discussions.new'
 import { Route as DiscussionsPostIdRouteImport } from './routes/discussions.$postId'
+import { Route as CoursesNewRouteImport } from './routes/courses.new'
 import { Route as CoursesCourseIdRouteImport } from './routes/courses.$courseId'
+import { Route as CoursesCourseIdEditRouteImport } from './routes/courses.$courseId.edit'
 
 const DiscussionsRoute = DiscussionsRouteImport.update({
   id: '/discussions',
@@ -36,15 +39,30 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DiscussionsNewRoute = DiscussionsNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => DiscussionsRoute,
+} as any)
 const DiscussionsPostIdRoute = DiscussionsPostIdRouteImport.update({
   id: '/$postId',
   path: '/$postId',
   getParentRoute: () => DiscussionsRoute,
 } as any)
+const CoursesNewRoute = CoursesNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => CoursesRoute,
+} as any)
 const CoursesCourseIdRoute = CoursesCourseIdRouteImport.update({
   id: '/$courseId',
   path: '/$courseId',
   getParentRoute: () => CoursesRoute,
+} as any)
+const CoursesCourseIdEditRoute = CoursesCourseIdEditRouteImport.update({
+  id: '/edit',
+  path: '/edit',
+  getParentRoute: () => CoursesCourseIdRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -52,16 +70,22 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRouteWithChildren
   '/discussions': typeof DiscussionsRouteWithChildren
-  '/courses/$courseId': typeof CoursesCourseIdRoute
+  '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
+  '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
+  '/discussions/new': typeof DiscussionsNewRoute
+  '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRouteWithChildren
   '/discussions': typeof DiscussionsRouteWithChildren
-  '/courses/$courseId': typeof CoursesCourseIdRoute
+  '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
+  '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
+  '/discussions/new': typeof DiscussionsNewRoute
+  '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -69,8 +93,11 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRouteWithChildren
   '/discussions': typeof DiscussionsRouteWithChildren
-  '/courses/$courseId': typeof CoursesCourseIdRoute
+  '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
+  '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
+  '/discussions/new': typeof DiscussionsNewRoute
+  '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -80,7 +107,10 @@ export interface FileRouteTypes {
     | '/courses'
     | '/discussions'
     | '/courses/$courseId'
+    | '/courses/new'
     | '/discussions/$postId'
+    | '/discussions/new'
+    | '/courses/$courseId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -88,7 +118,10 @@ export interface FileRouteTypes {
     | '/courses'
     | '/discussions'
     | '/courses/$courseId'
+    | '/courses/new'
     | '/discussions/$postId'
+    | '/discussions/new'
+    | '/courses/$courseId/edit'
   id:
     | '__root__'
     | '/'
@@ -96,7 +129,10 @@ export interface FileRouteTypes {
     | '/courses'
     | '/discussions'
     | '/courses/$courseId'
+    | '/courses/new'
     | '/discussions/$postId'
+    | '/discussions/new'
+    | '/courses/$courseId/edit'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -136,12 +172,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/discussions/new': {
+      id: '/discussions/new'
+      path: '/new'
+      fullPath: '/discussions/new'
+      preLoaderRoute: typeof DiscussionsNewRouteImport
+      parentRoute: typeof DiscussionsRoute
+    }
     '/discussions/$postId': {
       id: '/discussions/$postId'
       path: '/$postId'
       fullPath: '/discussions/$postId'
       preLoaderRoute: typeof DiscussionsPostIdRouteImport
       parentRoute: typeof DiscussionsRoute
+    }
+    '/courses/new': {
+      id: '/courses/new'
+      path: '/new'
+      fullPath: '/courses/new'
+      preLoaderRoute: typeof CoursesNewRouteImport
+      parentRoute: typeof CoursesRoute
     }
     '/courses/$courseId': {
       id: '/courses/$courseId'
@@ -150,15 +200,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoursesCourseIdRouteImport
       parentRoute: typeof CoursesRoute
     }
+    '/courses/$courseId/edit': {
+      id: '/courses/$courseId/edit'
+      path: '/edit'
+      fullPath: '/courses/$courseId/edit'
+      preLoaderRoute: typeof CoursesCourseIdEditRouteImport
+      parentRoute: typeof CoursesCourseIdRoute
+    }
   }
 }
 
+interface CoursesCourseIdRouteChildren {
+  CoursesCourseIdEditRoute: typeof CoursesCourseIdEditRoute
+}
+
+const CoursesCourseIdRouteChildren: CoursesCourseIdRouteChildren = {
+  CoursesCourseIdEditRoute: CoursesCourseIdEditRoute,
+}
+
+const CoursesCourseIdRouteWithChildren = CoursesCourseIdRoute._addFileChildren(
+  CoursesCourseIdRouteChildren,
+)
+
 interface CoursesRouteChildren {
-  CoursesCourseIdRoute: typeof CoursesCourseIdRoute
+  CoursesCourseIdRoute: typeof CoursesCourseIdRouteWithChildren
+  CoursesNewRoute: typeof CoursesNewRoute
 }
 
 const CoursesRouteChildren: CoursesRouteChildren = {
-  CoursesCourseIdRoute: CoursesCourseIdRoute,
+  CoursesCourseIdRoute: CoursesCourseIdRouteWithChildren,
+  CoursesNewRoute: CoursesNewRoute,
 }
 
 const CoursesRouteWithChildren =
@@ -166,10 +237,12 @@ const CoursesRouteWithChildren =
 
 interface DiscussionsRouteChildren {
   DiscussionsPostIdRoute: typeof DiscussionsPostIdRoute
+  DiscussionsNewRoute: typeof DiscussionsNewRoute
 }
 
 const DiscussionsRouteChildren: DiscussionsRouteChildren = {
   DiscussionsPostIdRoute: DiscussionsPostIdRoute,
+  DiscussionsNewRoute: DiscussionsNewRoute,
 }
 
 const DiscussionsRouteWithChildren = DiscussionsRoute._addFileChildren(
