@@ -8,7 +8,7 @@ import { courses, posts } from "@/lib/mock-data";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "学社 Studio — 学习、讨论、一起成长" },
+      { title: "超脑 Studio — 学习、讨论、一起成长" },
       {
         name: "description",
         content: "一个集课程学习、社区讨论于一体的成长型学习社群。",

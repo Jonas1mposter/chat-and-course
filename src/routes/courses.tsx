@@ -13,7 +13,7 @@ import type { Course } from "@/lib/mock-data";
 export const Route = createFileRoute("/courses")({
   head: () => ({
     meta: [
-      { title: "课程目录 — 学社 Studio" },
+      { title: "课程目录 — 超脑 Studio" },
       { name: "description", content: "浏览全部课程：前端开发、产品设计、AI 应用、运营增长。" },
     ],
   }),

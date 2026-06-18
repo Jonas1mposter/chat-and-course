@@ -15,7 +15,7 @@ const searchSchema = z.object({
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
-    meta: [{ title: "登录 / 注册 — 学社 Studio" }],
+    meta: [{ title: "登录 / 注册 — 超脑 Studio" }],
   }),
   component: AuthPage,
 });
@@ -49,7 +49,7 @@ function AuthPage() {
   return (
     <main className="mx-auto flex max-w-md flex-col px-6 py-16">
       <h1 className="text-3xl font-semibold tracking-tight">
-        {mode === "login" ? "登录学社" : "加入学社"}
+        {mode === "login" ? "登录超脑" : "加入超脑"}
       </h1>
       <p className="mt-2 text-sm text-muted-foreground">
         {mode === "login" ? "还没有账号？" : "已经有账号了？"}{" "}

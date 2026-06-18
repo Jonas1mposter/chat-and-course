@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/auth";
 import type { Course } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/discussions/new")({
-  head: () => ({ meta: [{ title: "发布新帖 — 学社 Studio" }] }),
+  head: () => ({ meta: [{ title: "发布新帖 — 超脑 Studio" }] }),
   component: NewPostPage,
 });
 

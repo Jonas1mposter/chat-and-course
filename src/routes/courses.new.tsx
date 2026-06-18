@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth";
 import { CourseForm, type CourseFormValue } from "@/lib/course-form";
 
 export const Route = createFileRoute("/courses/new")({
-  head: () => ({ meta: [{ title: "新建课程 — 学社 Studio" }] }),
+  head: () => ({ meta: [{ title: "新建课程 — 超脑 Studio" }] }),
   component: NewCourse,
 });
 

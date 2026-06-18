@@ -7,7 +7,7 @@ import { CourseForm, type CourseFormValue } from "@/lib/course-form";
 import type { Course } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/courses/$courseId/edit")({
-  head: () => ({ meta: [{ title: "编辑课程 — 学社 Studio" }] }),
+  head: () => ({ meta: [{ title: "编辑课程 — 超脑 Studio" }] }),
   component: EditCourse,
 });
 
