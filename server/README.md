@@ -1,4 +1,4 @@
-# 学社 Studio · 后端（方案 A：腾讯云自建）
+# 超脑 Studio · 后端（方案 A：腾讯云自建）
 
 一个最小可用的 Node + Express + PostgreSQL 后端，提供：
 
@@ -22,16 +22,16 @@ systemctl enable --now postgresql
 
 # 3. 建库建用户
 sudo -u postgres psql <<'SQL'
-CREATE USER xueshe WITH PASSWORD '换成强密码';
-CREATE DATABASE xueshe OWNER xueshe;
+CREATE USER chaonao WITH PASSWORD '换成强密码';
+CREATE DATABASE chaonao OWNER chaonao;
 SQL
 ```
 
 ## 二、部署后端
 
 ```bash
-# 上传 server/ 目录到服务器，比如 /opt/xueshe-api
-cd /opt/xueshe-api
+# 上传 server/ 目录到服务器，比如 /opt/chaonao-api
+cd /opt/chaonao-api
 cp .env.example .env
 vim .env      # 填 DATABASE_URL / JWT_SECRET / CORS_ORIGIN
 npm install
@@ -43,14 +43,14 @@ npm start           # 测试启动，访问 http://<服务器IP>:4000/api/health
 
 ```bash
 npm i -g pm2
-pm2 start npm --name xueshe-api -- start
+pm2 start npm --name chaonao-api -- start
 pm2 save
 pm2 startup        # 复制粘贴它给你的那行命令
 ```
 
 ## 四、Nginx 反代 + HTTPS（推荐）
 
-`/etc/nginx/sites-available/xueshe`：
+`/etc/nginx/sites-available/chaonao`：
 
 ```nginx
 server {
@@ -65,7 +65,7 @@ server {
 ```
 
 ```bash
-ln -s /etc/nginx/sites-available/xueshe /etc/nginx/sites-enabled/
+ln -s /etc/nginx/sites-available/chaonao /etc/nginx/sites-enabled/
 nginx -t && systemctl reload nginx
 # 申请 HTTPS
 apt-get install -y certbot python3-certbot-nginx
@@ -87,7 +87,7 @@ VITE_API_BASE_URL=https://api.yourdomain.com
 注册后只能是 `student` 或 `teacher`。第一个管理员手动改：
 
 ```bash
-sudo -u postgres psql -d xueshe -c \
+sudo -u postgres psql -d chaonao -c \
   "UPDATE users SET role='admin' WHERE email='你的邮箱';"
 ```
 
@@ -103,7 +103,7 @@ sudo -u postgres psql -d xueshe -c \
 | POST | /api/courses | teacher / admin |
 | PUT  | /api/courses/:id | 作者 / admin |
 | DELETE | /api/courses/:id | 作者 / admin |
-| GET  | /api/posts?courseId=&category= | 公开 |
+| GET  | /api/posts?courseId=&category= | 1 | 公开 |
 | GET  | /api/posts/:id | 公开 |
 | POST | /api/posts | 登录 |
 | POST | /api/posts/:id/replies | 登录 |

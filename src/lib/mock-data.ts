@@ -115,7 +115,7 @@ export const courses: Course[] = [
 export const posts: Post[] = [
   {
     id: "welcome",
-    title: "👋 欢迎来到学社，请先看这条置顶",
+    title: "👋 欢迎来到超脑，请先看这条置顶",
     author: "社群管家",
     authorAvatar: "管",
     category: "公告",

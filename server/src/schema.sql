@@ -1,4 +1,4 @@
--- 学社 Studio 数据库结构
+-- 超脑 Studio 数据库结构
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- 角色枚举

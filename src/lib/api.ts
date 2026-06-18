@@ -1,6 +1,6 @@
 const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") || "";
 
-const TOKEN_KEY = "xueshe.token";
+const TOKEN_KEY = "chaonao.token";
 
 export const getToken = () =>
   typeof window === "undefined" ? null : window.localStorage.getItem(TOKEN_KEY);

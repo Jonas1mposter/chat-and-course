@@ -22,7 +22,7 @@ export function SiteHeader() {
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
             <Sparkles className="h-4 w-4" />
           </span>
-          <span>学社 Studio</span>
+          <span>超脑 Studio</span>
         </Link>
         <nav className="hidden items-center gap-1 md:flex">
           {navItems.map((item) => {

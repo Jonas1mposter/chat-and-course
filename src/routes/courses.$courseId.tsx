@@ -10,7 +10,7 @@ import { useAuth } from "@/lib/auth";
 import type { Course } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/courses/$courseId")({
-  head: () => ({ meta: [{ title: "课程详情 — 学社 Studio" }] }),
+  head: () => ({ meta: [{ title: "课程详情 — 超脑 Studio" }] }),
   component: CourseDetail,
   notFoundComponent: () => (
     <div className="mx-auto max-w-2xl px-6 py-24 text-center">
