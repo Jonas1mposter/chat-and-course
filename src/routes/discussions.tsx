@@ -1,10 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { MessageSquare, Heart, Plus, Pin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { posts, categories } from "@/lib/mock-data";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import type { Post } from "@/lib/mock-data";
+
+const categories = ["全部", "公告", "前端开发", "产品设计", "AI 应用", "运营增长", "讨论"];
 
 export const Route = createFileRoute("/discussions")({
   head: () => ({
@@ -18,7 +23,12 @@ export const Route = createFileRoute("/discussions")({
 
 function DiscussionsPage() {
   const [cat, setCat] = useState("全部");
-  const filtered = posts.filter((p) => cat === "全部" || p.category === cat);
+  const { user } = useAuth();
+  const { data: posts = [], isLoading, error } = useQuery({
+    queryKey: ["posts", cat],
+    queryFn: () => api<Post[]>(`/api/posts?category=${encodeURIComponent(cat)}`),
+  });
+  const filtered = posts;
   const sorted = [...filtered].sort((a, b) => Number(!!b.pinned) - Number(!!a.pinned));
 
   return (
@@ -28,10 +38,18 @@ function DiscussionsPage() {
           <h1 className="text-4xl font-semibold tracking-tight">讨论区</h1>
           <p className="mt-2 text-muted-foreground">提问、分享、复盘 — 让经验流动起来。</p>
         </div>
-        <Button>
-          <Plus className="mr-1 h-4 w-4" /> 发布新帖
+        <Button asChild>
+          <Link to={user ? "/discussions/new" : "/auth"} search={user ? undefined : { mode: "login", redirect: "/discussions/new" }}>
+            <Plus className="mr-1 h-4 w-4" /> 发布新帖
+          </Link>
         </Button>
       </header>
+
+      {error && (
+        <div className="mb-6 rounded-md border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
+          加载失败：{(error as Error).message}
+        </div>
+      )}
 
       <div className="mb-6 flex flex-wrap gap-2">
         {categories.map((c) => (
@@ -51,6 +69,11 @@ function DiscussionsPage() {
       </div>
 
       <div className="space-y-3">
+        {!isLoading && sorted.length === 0 && (
+          <div className="rounded-lg border border-dashed border-border py-16 text-center text-muted-foreground">
+            还没有帖子，来发布第一条
+          </div>
+        )}
         {sorted.map((p) => (
           <Link key={p.id} to="/discussions/$postId" params={{ postId: p.id }}>
             <Card className="flex gap-4 border-border/60 p-5 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]">
