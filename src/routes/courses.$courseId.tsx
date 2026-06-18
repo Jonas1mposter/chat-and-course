@@ -1,25 +1,16 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { courses, type Course } from "@/lib/mock-data";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import type { Course } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/courses/$courseId")({
-  loader: ({ params }): { course: Course } => {
-    const course = courses.find((c) => c.id === params.courseId);
-    if (!course) throw notFound();
-    return { course };
-  },
-  head: ({ loaderData }) => ({
-    meta: loaderData
-      ? [
-          { title: `${loaderData.course.title} — 学社 Studio` },
-          { name: "description", content: loaderData.course.description },
-        ]
-      : [],
-  }),
+  head: () => ({ meta: [{ title: "课程详情 — 学社 Studio" }] }),
   component: CourseDetail,
   notFoundComponent: () => (
     <div className="mx-auto max-w-2xl px-6 py-24 text-center">
@@ -37,19 +28,47 @@ export const Route = createFileRoute("/courses/$courseId")({
 });
 
 function CourseDetail() {
-  const { course } = Route.useLoaderData() as { course: Course };
+  const { courseId } = Route.useParams();
+  const { user } = useAuth();
+  const { data: course, isLoading, error } = useQuery({
+    queryKey: ["course", courseId],
+    queryFn: () => api<Course>(`/api/courses/${courseId}`),
+  });
+
+  if (isLoading) {
+    return <main className="mx-auto max-w-2xl px-6 py-24 text-center text-muted-foreground">加载中…</main>;
+  }
+  if (error || !course) {
+    return (
+      <main className="mx-auto max-w-2xl px-6 py-24 text-center text-muted-foreground">
+        {error ? `加载失败：${(error as Error).message}` : "课程不存在"}
+      </main>
+    );
+  }
+
+  return <CourseView course={course} canEdit={user?.role === "admin" || user?.role === "teacher"} />;
+}
+
+function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
   const firstPlayable = course.lessonsList.findIndex((l) => l.videoUrl);
   const [activeIdx, setActiveIdx] = useState(firstPlayable >= 0 ? firstPlayable : 0);
   const activeLesson = course.lessonsList[activeIdx];
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
-      <Link
-        to="/courses"
-        className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-      >
-        <ArrowLeft className="h-4 w-4" /> 全部课程
-      </Link>
+      <div className="flex items-center justify-between">
+        <Link
+          to="/courses"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" /> 全部课程
+        </Link>
+        {canEdit && (
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/courses/$courseId/edit" params={{ courseId: course.id }}>编辑课程</Link>
+          </Button>
+        )}
+      </div>
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_320px]">
         <div>

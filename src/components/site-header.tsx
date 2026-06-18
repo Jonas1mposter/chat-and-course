@@ -1,7 +1,8 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { BookOpen, MessageSquare, Home, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
 
 const navItems = [
   { to: "/", label: "首页", icon: Home },
@@ -11,6 +12,8 @@ const navItems = [
 
 export function SiteHeader() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { user, logout, loading } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -43,10 +46,35 @@ export function SiteHeader() {
           })}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" size="sm">
-            登录
-          </Button>
-          <Button size="sm">加入社群</Button>
+          {loading ? null : user ? (
+            <>
+              <span className="hidden sm:inline text-sm text-muted-foreground">
+                {user.name}
+                <span className="ml-1 rounded bg-secondary px-1.5 py-0.5 text-xs">
+                  {user.role === "admin" ? "管理员" : user.role === "teacher" ? "讲师" : "学员"}
+                </span>
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  logout();
+                  navigate({ to: "/" });
+                }}
+              >
+                退出
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/auth" search={{ mode: "login" }}>登录</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link to="/auth" search={{ mode: "register" }}>加入社群</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>

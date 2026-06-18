@@ -1,10 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search, Clock, Users } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Search, Clock, Users, Plus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { courses } from "@/lib/mock-data";
+import { Button } from "@/components/ui/button";
+import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
+import type { Course } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/courses")({
   head: () => ({
@@ -16,11 +20,18 @@ export const Route = createFileRoute("/courses")({
   component: CoursesPage,
 });
 
-const categories = ["全部", ...Array.from(new Set(courses.map((c) => c.category)))];
-
 function CoursesPage() {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState("全部");
+  const { user } = useAuth();
+  const canCreate = user?.role === "teacher" || user?.role === "admin";
+
+  const { data: courses = [], isLoading, error } = useQuery({
+    queryKey: ["courses"],
+    queryFn: () => api<Course[]>("/api/courses"),
+  });
+
+  const categories = ["全部", ...Array.from(new Set(courses.map((c) => c.category).filter(Boolean)))];
 
   const filtered = courses.filter(
     (c) =>
@@ -30,12 +41,25 @@ function CoursesPage() {
 
   return (
     <main className="mx-auto max-w-6xl px-6 py-12">
-      <header className="mb-10">
-        <h1 className="text-4xl font-semibold tracking-tight">课程目录</h1>
-        <p className="mt-2 text-muted-foreground">
-          系统化的学习路径，配合社群讨论，让进步可见。
-        </p>
+      <header className="mb-10 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-semibold tracking-tight">课程目录</h1>
+          <p className="mt-2 text-muted-foreground">
+            系统化的学习路径，配合社群讨论，让进步可见。
+          </p>
+        </div>
+        {canCreate && (
+          <Button asChild>
+            <Link to="/courses/new"><Plus className="mr-1 h-4 w-4" />新建课程</Link>
+          </Button>
+        )}
       </header>
+
+      {error && (
+        <div className="mb-6 rounded-md border border-destructive/50 bg-destructive/5 p-4 text-sm text-destructive">
+          加载失败：{(error as Error).message}
+        </div>
+      )}
 
       <div className="mb-8 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[240px]">
@@ -96,9 +120,9 @@ function CoursesPage() {
             </Card>
           </Link>
         ))}
-        {filtered.length === 0 && (
+        {!isLoading && filtered.length === 0 && (
           <div className="col-span-full rounded-lg border border-dashed border-border py-16 text-center text-muted-foreground">
-            没有找到匹配的课程
+            {courses.length === 0 ? "还没有课程，去新建一门吧" : "没有找到匹配的课程"}
           </div>
         )}
       </div>

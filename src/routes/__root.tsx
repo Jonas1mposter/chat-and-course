@@ -10,6 +10,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { SiteHeader } from "@/components/site-header";
+import { AuthProvider } from "@/lib/auth";
 
 function NotFoundComponent() {
   return (
@@ -118,16 +119,18 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background">
-        <SiteHeader />
-        <Outlet />
-        <footer className="border-t border-border/60 mt-24">
-          <div className="mx-auto max-w-6xl px-6 py-8 text-sm text-muted-foreground flex flex-wrap items-center justify-between gap-3">
-            <span>© 学社 Studio · 让学习成为一件愉快的事</span>
-            <span>用 ❤️ 打造</span>
-          </div>
-        </footer>
-      </div>
+      <AuthProvider>
+        <div className="min-h-screen bg-background">
+          <SiteHeader />
+          <Outlet />
+          <footer className="border-t border-border/60 mt-24">
+            <div className="mx-auto max-w-6xl px-6 py-8 text-sm text-muted-foreground flex flex-wrap items-center justify-between gap-3">
+              <span>© 学社 Studio · 让学习成为一件愉快的事</span>
+              <span>用 ❤️ 打造</span>
+            </div>
+          </footer>
+        </div>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
