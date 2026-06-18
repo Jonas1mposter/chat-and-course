@@ -74,16 +74,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Community Class Hub is a web application for hosting classes and fostering community discussion." },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Community Class Hub is a web application for hosting classes and fostering community discussion." },
+      { title: "超脑 Studio" },
+      { name: "description", content: "超脑 Studio 是一个课程学习和社群讨论平台。" },
+      { name: "author", content: "超脑 Studio" },
+      { property: "og:title", content: "超脑 Studio" },
+      { property: "og:description", content: "超脑 Studio 是一个课程学习和社群讨论平台。" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "Community Class Hub is a web application for hosting classes and fostering community discussion." },
+      { name: "twitter:site", content: "@ChaonaoStudio" },
+      { name: "twitter:title", content: "超脑 Studio" },
+      { name: "twitter:description", content: "超脑 Studio 是一个课程学习和社群讨论平台。" },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e2b826fa-9401-4a4c-8bea-928f4c8dd1b1/id-preview-bbbc1375--69bebb8d-c7b7-4075-bba0-209eb827efa0.lovable.app-1781270825766.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e2b826fa-9401-4a4c-8bea-928f4c8dd1b1/id-preview-bbbc1375--69bebb8d-c7b7-4075-bba0-209eb827efa0.lovable.app-1781270825766.png" },
     ],
@@ -125,7 +125,7 @@ function RootComponent() {
           <Outlet />
           <footer className="border-t border-border/60 mt-24">
             <div className="mx-auto max-w-6xl px-6 py-8 text-sm text-muted-foreground flex flex-wrap items-center justify-between gap-3">
-              <span>© 学社 Studio · 让学习成为一件愉快的事</span>
+              <span>© 超脑 Studio · 让学习成为一件愉快的事</span>
               <span>用 ❤️ 打造</span>
             </div>
           </footer>
