@@ -103,11 +103,6 @@ r.post("/:id/like", requireAuth, async (req, res) => {
   }
 });
 
-// 完成一节课（积分用）
-r.post("/lesson-progress", requireAuth, async (req, res) => {
-  // 这里复用 posts 路由文件是为了少建文件；逻辑放对应位置即可
-  res.status(404).end();
-});
 
 r.post("/:id/pin", requireRole("admin"), async (req, res) => {
   await q("UPDATE posts SET pinned = NOT pinned WHERE id=$1", [req.params.id]);
