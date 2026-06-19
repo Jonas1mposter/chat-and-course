@@ -15,6 +15,7 @@ import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VideosNewRouteImport } from './routes/videos.new'
+import { Route as VideosVideoIdRouteImport } from './routes/videos.$videoId'
 import { Route as DiscussionsNewRouteImport } from './routes/discussions.new'
 import { Route as DiscussionsPostIdRouteImport } from './routes/discussions.$postId'
 import { Route as CoursesNewRouteImport } from './routes/courses.new'
@@ -49,6 +50,11 @@ const IndexRoute = IndexRouteImport.update({
 const VideosNewRoute = VideosNewRouteImport.update({
   id: '/new',
   path: '/new',
+  getParentRoute: () => VideosRoute,
+} as any)
+const VideosVideoIdRoute = VideosVideoIdRouteImport.update({
+  id: '/$videoId',
+  path: '/$videoId',
   getParentRoute: () => VideosRoute,
 } as any)
 const DiscussionsNewRoute = DiscussionsNewRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
   '/discussions/new': typeof DiscussionsNewRoute
+  '/videos/$videoId': typeof VideosVideoIdRoute
   '/videos/new': typeof VideosNewRoute
   '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
 }
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
   '/discussions/new': typeof DiscussionsNewRoute
+  '/videos/$videoId': typeof VideosVideoIdRoute
   '/videos/new': typeof VideosNewRoute
   '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
 }
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
   '/discussions/new': typeof DiscussionsNewRoute
+  '/videos/$videoId': typeof VideosVideoIdRoute
   '/videos/new': typeof VideosNewRoute
   '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
 }
@@ -129,6 +138,7 @@ export interface FileRouteTypes {
     | '/courses/new'
     | '/discussions/$postId'
     | '/discussions/new'
+    | '/videos/$videoId'
     | '/videos/new'
     | '/courses/$courseId/edit'
   fileRoutesByTo: FileRoutesByTo
@@ -142,6 +152,7 @@ export interface FileRouteTypes {
     | '/courses/new'
     | '/discussions/$postId'
     | '/discussions/new'
+    | '/videos/$videoId'
     | '/videos/new'
     | '/courses/$courseId/edit'
   id:
@@ -155,6 +166,7 @@ export interface FileRouteTypes {
     | '/courses/new'
     | '/discussions/$postId'
     | '/discussions/new'
+    | '/videos/$videoId'
     | '/videos/new'
     | '/courses/$courseId/edit'
   fileRoutesById: FileRoutesById
@@ -209,6 +221,13 @@ declare module '@tanstack/react-router' {
       path: '/new'
       fullPath: '/videos/new'
       preLoaderRoute: typeof VideosNewRouteImport
+      parentRoute: typeof VideosRoute
+    }
+    '/videos/$videoId': {
+      id: '/videos/$videoId'
+      path: '/$videoId'
+      fullPath: '/videos/$videoId'
+      preLoaderRoute: typeof VideosVideoIdRouteImport
       parentRoute: typeof VideosRoute
     }
     '/discussions/new': {
@@ -289,10 +308,12 @@ const DiscussionsRouteWithChildren = DiscussionsRoute._addFileChildren(
 )
 
 interface VideosRouteChildren {
+  VideosVideoIdRoute: typeof VideosVideoIdRoute
   VideosNewRoute: typeof VideosNewRoute
 }
 
 const VideosRouteChildren: VideosRouteChildren = {
+  VideosVideoIdRoute: VideosVideoIdRoute,
   VideosNewRoute: VideosNewRoute,
 }
 
