@@ -23,6 +23,7 @@ r.get("/", async (req, res) => {
   if (category && category !== "全部") { params.push(category); where.push(`p.category=$${params.length}`); }
   const sql = `
     SELECT p.*, u.name AS author_name, u.role AS author_role,
+      user_points(u.id) AS author_points,
       (SELECT count(*) FROM replies r WHERE r.post_id=p.id) AS replies_count
     FROM posts p JOIN users u ON u.id=p.author_id
     ${where.length ? "WHERE " + where.join(" AND ") : ""}
@@ -33,15 +34,18 @@ r.get("/", async (req, res) => {
 });
 
 r.get("/:id", async (req, res) => {
+  const me = req.user?.sub || null;
   const { rows } = await q(
     `SELECT p.*, u.name AS author_name, u.role AS author_role,
+      user_points(u.id) AS author_points,
+      ${me ? `EXISTS(SELECT 1 FROM post_likes pl WHERE pl.post_id=p.id AND pl.user_id=$2)` : `false`} AS liked,
       (SELECT count(*) FROM replies r WHERE r.post_id=p.id) AS replies_count
      FROM posts p JOIN users u ON u.id=p.author_id WHERE p.id=$1`,
-    [req.params.id],
+    me ? [req.params.id, me] : [req.params.id],
   );
   if (!rows[0]) return res.status(404).json({ error: "帖子不存在" });
   const replies = await q(
-    `SELECT r.*, u.name AS author_name FROM replies r
+    `SELECT r.*, u.name AS author_name, user_points(u.id) AS author_points FROM replies r
      JOIN users u ON u.id=r.author_id WHERE r.post_id=$1 ORDER BY r.created_at ASC`,
     [req.params.id],
   );
@@ -52,6 +56,7 @@ r.get("/:id", async (req, res) => {
       postId: r.post_id,
       author: r.author_name,
       authorAvatar: r.author_name?.[0] ?? "?",
+      authorPoints: Number(r.author_points ?? 0),
       content: r.content,
       likes: r.likes,
       createdAt: new Date(r.created_at).toLocaleString("zh-CN"),
@@ -129,6 +134,9 @@ function rowToPost(p) {
     author: p.author_name,
     authorAvatar: p.author_name?.[0] ?? "?",
     authorRole: p.author_role,
+    authorId: p.author_id,
+    authorPoints: Number(p.author_points ?? 0),
+    liked: p.liked ?? false,
     pinned: p.pinned,
     likes: p.likes,
     replies: Number(p.replies_count ?? 0),
