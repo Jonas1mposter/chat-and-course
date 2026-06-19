@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Post, Reply } from "@/lib/mock-data";
+import { TierBadge } from "@/components/tier-badge";
 
 export const Route = createFileRoute("/discussions/$postId")({
   head: () => ({ meta: [{ title: "帖子详情 — 讨论区" }] }),
@@ -41,6 +42,10 @@ function PostDetail() {
     mutationFn: (c: string) => api(`/api/posts/${postId}/replies`, { method: "POST", body: { content: c } }),
     onSuccess: () => { setContent(""); qc.invalidateQueries({ queryKey: ["post", postId] }); },
   });
+  const like = useMutation({
+    mutationFn: () => api<{ liked: boolean }>(`/api/posts/${postId}/like`, { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["post", postId] }),
+  });
 
   if (isLoading) return <main className="mx-auto max-w-2xl px-6 py-24 text-center text-muted-foreground">加载中…</main>;
   if (error || !data) return <main className="mx-auto max-w-2xl px-6 py-24 text-center text-muted-foreground">{error ? `加载失败：${(error as Error).message}` : "帖子不存在"}</main>;
@@ -69,7 +74,14 @@ function PostDetail() {
           <div className="grid h-9 w-9 place-items-center rounded-full bg-primary/10 font-medium text-primary">
             {post.authorAvatar}
           </div>
-          <span className="font-medium text-foreground">{post.author}</span>
+          <Link
+            to="/u/$userId"
+            params={{ userId: (post as any).authorId ?? "" }}
+            className="font-medium text-foreground hover:underline"
+          >
+            {post.author}
+          </Link>
+          <TierBadge points={(post as any).authorPoints ?? 0} />
           <span>·</span>
           <span>{post.createdAt}</span>
         </div>
@@ -79,7 +91,12 @@ function PostDetail() {
         </Card>
 
         <div className="mt-4 flex items-center gap-2">
-          <Button variant="outline" size="sm">
+          <Button
+            variant={(post as any).liked ? "default" : "outline"}
+            size="sm"
+            disabled={!user || like.isPending}
+            onClick={() => user && like.mutate()}
+          >
             <Heart className="mr-1 h-4 w-4" /> {post.likes}
           </Button>
           <Button variant="outline" size="sm">
@@ -104,6 +121,7 @@ function PostDetail() {
               <div className="flex-1">
                 <div className="flex items-center gap-2 text-sm">
                   <span className="font-medium">{r.author}</span>
+                  <TierBadge points={(r as any).authorPoints ?? 0} />
                   <span className="text-muted-foreground">· {r.createdAt}</span>
                 </div>
                 <p className="mt-2 leading-relaxed text-foreground/90">{r.content}</p>

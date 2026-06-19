@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { q } from "../db.js";
-import { requireRole } from "../auth.js";
+import { requireAuth, requireRole } from "../auth.js";
 
 const r = Router();
 
@@ -123,6 +123,29 @@ r.delete("/:id", requireRole("teacher", "admin"), async (req, res) => {
     return res.status(403).json({ error: "不能删除别人的课程" });
   await q("DELETE FROM courses WHERE id=$1", [req.params.id]);
   res.json({ ok: true });
+});
+
+// 标记一节课为完成（用于段位积分）
+r.post("/:id/lessons/:idx/complete", requireAuth, async (req, res) => {
+  const idx = parseInt(req.params.idx, 10);
+  if (!Number.isFinite(idx) || idx < 0)
+    return res.status(400).json({ error: "lesson idx 非法" });
+  await q(
+    `INSERT INTO lesson_progress(user_id,course_id,lesson_idx)
+     VALUES($1,$2,$3) ON CONFLICT DO NOTHING`,
+    [req.user.sub, req.params.id, idx],
+  );
+  res.json({ ok: true });
+});
+
+// 我对某课程的进度
+r.get("/:id/progress", requireAuth, async (req, res) => {
+  const { rows } = await q(
+    `SELECT lesson_idx FROM lesson_progress
+      WHERE user_id=$1 AND course_id=$2 ORDER BY lesson_idx`,
+    [req.user.sub, req.params.id],
+  );
+  res.json({ completed: rows.map((r) => r.lesson_idx) });
 });
 
 export default r;

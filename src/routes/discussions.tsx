@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Post } from "@/lib/mock-data";
+import { TierBadge } from "@/components/tier-badge";
 
 const categories = ["全部", "公告", "前端开发", "产品设计", "AI 应用", "运营增长", "讨论"];
 
@@ -96,6 +97,7 @@ function DiscussionsPage() {
                     </Badge>
                   )}
                   <Badge variant="outline">{p.category}</Badge>
+                  <TierBadge points={(p as any).authorPoints ?? 0} />
                   <span className="text-xs text-muted-foreground">
                     {p.author} · {p.createdAt}
                   </span>

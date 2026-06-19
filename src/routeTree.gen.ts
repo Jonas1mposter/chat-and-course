@@ -9,16 +9,31 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VideosRouteImport } from './routes/videos'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DiscussionsRouteImport } from './routes/discussions'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VideosNewRouteImport } from './routes/videos.new'
+import { Route as VideosVideoIdRouteImport } from './routes/videos.$videoId'
+import { Route as UUserIdRouteImport } from './routes/u.$userId'
 import { Route as DiscussionsNewRouteImport } from './routes/discussions.new'
 import { Route as DiscussionsPostIdRouteImport } from './routes/discussions.$postId'
 import { Route as CoursesNewRouteImport } from './routes/courses.new'
 import { Route as CoursesCourseIdRouteImport } from './routes/courses.$courseId'
 import { Route as CoursesCourseIdEditRouteImport } from './routes/courses.$courseId.edit'
 
+const VideosRoute = VideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DiscussionsRoute = DiscussionsRouteImport.update({
   id: '/discussions',
   path: '/discussions',
@@ -37,6 +52,21 @@ const AuthRoute = AuthRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VideosNewRoute = VideosNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => VideosRoute,
+} as any)
+const VideosVideoIdRoute = VideosVideoIdRouteImport.update({
+  id: '/$videoId',
+  path: '/$videoId',
+  getParentRoute: () => VideosRoute,
+} as any)
+const UUserIdRoute = UUserIdRouteImport.update({
+  id: '/u/$userId',
+  path: '/u/$userId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiscussionsNewRoute = DiscussionsNewRouteImport.update({
@@ -70,10 +100,15 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRouteWithChildren
   '/discussions': typeof DiscussionsRouteWithChildren
+  '/leaderboard': typeof LeaderboardRoute
+  '/videos': typeof VideosRouteWithChildren
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
   '/discussions/new': typeof DiscussionsNewRoute
+  '/u/$userId': typeof UUserIdRoute
+  '/videos/$videoId': typeof VideosVideoIdRoute
+  '/videos/new': typeof VideosNewRoute
   '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -81,10 +116,15 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRouteWithChildren
   '/discussions': typeof DiscussionsRouteWithChildren
+  '/leaderboard': typeof LeaderboardRoute
+  '/videos': typeof VideosRouteWithChildren
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
   '/discussions/new': typeof DiscussionsNewRoute
+  '/u/$userId': typeof UUserIdRoute
+  '/videos/$videoId': typeof VideosVideoIdRoute
+  '/videos/new': typeof VideosNewRoute
   '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
 }
 export interface FileRoutesById {
@@ -93,10 +133,15 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRouteWithChildren
   '/discussions': typeof DiscussionsRouteWithChildren
+  '/leaderboard': typeof LeaderboardRoute
+  '/videos': typeof VideosRouteWithChildren
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
   '/discussions/new': typeof DiscussionsNewRoute
+  '/u/$userId': typeof UUserIdRoute
+  '/videos/$videoId': typeof VideosVideoIdRoute
+  '/videos/new': typeof VideosNewRoute
   '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
 }
 export interface FileRouteTypes {
@@ -106,10 +151,15 @@ export interface FileRouteTypes {
     | '/auth'
     | '/courses'
     | '/discussions'
+    | '/leaderboard'
+    | '/videos'
     | '/courses/$courseId'
     | '/courses/new'
     | '/discussions/$postId'
     | '/discussions/new'
+    | '/u/$userId'
+    | '/videos/$videoId'
+    | '/videos/new'
     | '/courses/$courseId/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -117,10 +167,15 @@ export interface FileRouteTypes {
     | '/auth'
     | '/courses'
     | '/discussions'
+    | '/leaderboard'
+    | '/videos'
     | '/courses/$courseId'
     | '/courses/new'
     | '/discussions/$postId'
     | '/discussions/new'
+    | '/u/$userId'
+    | '/videos/$videoId'
+    | '/videos/new'
     | '/courses/$courseId/edit'
   id:
     | '__root__'
@@ -128,10 +183,15 @@ export interface FileRouteTypes {
     | '/auth'
     | '/courses'
     | '/discussions'
+    | '/leaderboard'
+    | '/videos'
     | '/courses/$courseId'
     | '/courses/new'
     | '/discussions/$postId'
     | '/discussions/new'
+    | '/u/$userId'
+    | '/videos/$videoId'
+    | '/videos/new'
     | '/courses/$courseId/edit'
   fileRoutesById: FileRoutesById
 }
@@ -140,10 +200,27 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CoursesRoute: typeof CoursesRouteWithChildren
   DiscussionsRoute: typeof DiscussionsRouteWithChildren
+  LeaderboardRoute: typeof LeaderboardRoute
+  VideosRoute: typeof VideosRouteWithChildren
+  UUserIdRoute: typeof UUserIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/videos': {
+      id: '/videos'
+      path: '/videos'
+      fullPath: '/videos'
+      preLoaderRoute: typeof VideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/discussions': {
       id: '/discussions'
       path: '/discussions'
@@ -170,6 +247,27 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/videos/new': {
+      id: '/videos/new'
+      path: '/new'
+      fullPath: '/videos/new'
+      preLoaderRoute: typeof VideosNewRouteImport
+      parentRoute: typeof VideosRoute
+    }
+    '/videos/$videoId': {
+      id: '/videos/$videoId'
+      path: '/$videoId'
+      fullPath: '/videos/$videoId'
+      preLoaderRoute: typeof VideosVideoIdRouteImport
+      parentRoute: typeof VideosRoute
+    }
+    '/u/$userId': {
+      id: '/u/$userId'
+      path: '/u/$userId'
+      fullPath: '/u/$userId'
+      preLoaderRoute: typeof UUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/discussions/new': {
@@ -249,11 +347,27 @@ const DiscussionsRouteWithChildren = DiscussionsRoute._addFileChildren(
   DiscussionsRouteChildren,
 )
 
+interface VideosRouteChildren {
+  VideosVideoIdRoute: typeof VideosVideoIdRoute
+  VideosNewRoute: typeof VideosNewRoute
+}
+
+const VideosRouteChildren: VideosRouteChildren = {
+  VideosVideoIdRoute: VideosVideoIdRoute,
+  VideosNewRoute: VideosNewRoute,
+}
+
+const VideosRouteWithChildren =
+  VideosRoute._addFileChildren(VideosRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   CoursesRoute: CoursesRouteWithChildren,
   DiscussionsRoute: DiscussionsRouteWithChildren,
+  LeaderboardRoute: LeaderboardRoute,
+  VideosRoute: VideosRouteWithChildren,
+  UUserIdRoute: UUserIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
