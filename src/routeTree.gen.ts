@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VideosRouteImport } from './routes/videos'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as DiscussionsRouteImport } from './routes/discussions'
 import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -25,6 +26,11 @@ import { Route as CoursesCourseIdEditRouteImport } from './routes/courses.$cours
 const VideosRoute = VideosRouteImport.update({
   id: '/videos',
   path: '/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiscussionsRoute = DiscussionsRouteImport.update({
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRouteWithChildren
   '/discussions': typeof DiscussionsRouteWithChildren
+  '/leaderboard': typeof LeaderboardRoute
   '/videos': typeof VideosRouteWithChildren
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRouteWithChildren
   '/discussions': typeof DiscussionsRouteWithChildren
+  '/leaderboard': typeof LeaderboardRoute
   '/videos': typeof VideosRouteWithChildren
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/courses': typeof CoursesRouteWithChildren
   '/discussions': typeof DiscussionsRouteWithChildren
+  '/leaderboard': typeof LeaderboardRoute
   '/videos': typeof VideosRouteWithChildren
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/courses'
     | '/discussions'
+    | '/leaderboard'
     | '/videos'
     | '/courses/$courseId'
     | '/courses/new'
@@ -147,6 +157,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/courses'
     | '/discussions'
+    | '/leaderboard'
     | '/videos'
     | '/courses/$courseId'
     | '/courses/new'
@@ -161,6 +172,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/courses'
     | '/discussions'
+    | '/leaderboard'
     | '/videos'
     | '/courses/$courseId'
     | '/courses/new'
@@ -176,6 +188,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CoursesRoute: typeof CoursesRouteWithChildren
   DiscussionsRoute: typeof DiscussionsRouteWithChildren
+  LeaderboardRoute: typeof LeaderboardRoute
   VideosRoute: typeof VideosRouteWithChildren
 }
 
@@ -186,6 +199,13 @@ declare module '@tanstack/react-router' {
       path: '/videos'
       fullPath: '/videos'
       preLoaderRoute: typeof VideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/discussions': {
@@ -325,6 +345,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CoursesRoute: CoursesRouteWithChildren,
   DiscussionsRoute: DiscussionsRouteWithChildren,
+  LeaderboardRoute: LeaderboardRoute,
   VideosRoute: VideosRouteWithChildren,
 }
 export const routeTree = rootRouteImport
