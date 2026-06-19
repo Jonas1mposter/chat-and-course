@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { BookOpen, MessageSquare, Home, Sparkles } from "lucide-react";
+import { BookOpen, MessageSquare, Home, Sparkles, Video, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -8,6 +8,8 @@ const navItems = [
   { to: "/", label: "首页", icon: Home },
   { to: "/courses", label: "课程", icon: BookOpen },
   { to: "/discussions", label: "讨论区", icon: MessageSquare },
+  { to: "/videos", label: "视频", icon: Video },
+  { to: "/leaderboard", label: "排行榜", icon: Trophy },
 ] as const;
 
 export function SiteHeader() {
@@ -49,7 +51,9 @@ export function SiteHeader() {
           {loading ? null : user ? (
             <>
               <span className="hidden sm:inline text-sm text-muted-foreground">
-                {user.name}
+                <Link to="/u/$userId" params={{ userId: user.id }} className="hover:underline">
+                  {user.name}
+                </Link>
                 <span className="ml-1 rounded bg-secondary px-1.5 py-0.5 text-xs">
                   {user.role === "admin" ? "管理员" : user.role === "teacher" ? "讲师" : "学员"}
                 </span>
