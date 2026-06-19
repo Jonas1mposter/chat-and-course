@@ -6,6 +6,8 @@ import { authOptional } from "./auth.js";
 import auth from "./routes/auth.js";
 import courses from "./routes/courses.js";
 import posts from "./routes/posts.js";
+import videos from "./routes/videos.js";
+import users from "./routes/users.js";
 
 const app = express();
 app.use(express.json({ limit: "1mb" }));
@@ -21,6 +23,8 @@ app.get("/api/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
 app.use("/api/auth", auth);
 app.use("/api/courses", courses);
 app.use("/api/posts", posts);
+app.use("/api/videos", videos);
+app.use("/api/users", users);
 
 app.use((err, _req, res, _next) => {
   console.error(err);
