@@ -81,6 +81,34 @@ r.post("/:id/replies", requireAuth, async (req, res) => {
   res.json({ id: rows[0].id });
 });
 
+// 点赞 / 取消点赞
+r.post("/:id/like", requireAuth, async (req, res) => {
+  const ex = await q(
+    "SELECT 1 FROM post_likes WHERE post_id=$1 AND user_id=$2",
+    [req.params.id, req.user.sub],
+  );
+  if (ex.rowCount) {
+    await q("DELETE FROM post_likes WHERE post_id=$1 AND user_id=$2", [
+      req.params.id, req.user.sub,
+    ]);
+    await q("UPDATE posts SET likes = GREATEST(likes-1,0) WHERE id=$1", [req.params.id]);
+    res.json({ liked: false });
+  } else {
+    await q(
+      "INSERT INTO post_likes(post_id,user_id) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      [req.params.id, req.user.sub],
+    );
+    await q("UPDATE posts SET likes = likes+1 WHERE id=$1", [req.params.id]);
+    res.json({ liked: true });
+  }
+});
+
+// 完成一节课（积分用）
+r.post("/lesson-progress", requireAuth, async (req, res) => {
+  // 这里复用 posts 路由文件是为了少建文件；逻辑放对应位置即可
+  res.status(404).end();
+});
+
 r.post("/:id/pin", requireRole("admin"), async (req, res) => {
   await q("UPDATE posts SET pinned = NOT pinned WHERE id=$1", [req.params.id]);
   res.json({ ok: true });
