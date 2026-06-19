@@ -5,7 +5,38 @@
 - 注册 / 登录（JWT 30 天）
 - 用户身份：`student` / `teacher` / `admin`
 - 课程：列表 / 详情 / 新增 / 编辑 / 发布（讲师 + 管理员）
-- 讨论区：按课程发帖 / 回复 / 置顶（管理员）
+- 讨论区：按课程发帖 / 回复 / 点赞 / 置顶（管理员）
+- 视频墙：腾讯云 COS 预签名 PUT 直传 + 点赞 / 播放计数
+- 段位 / 积分：发帖 +5、评论 +2、上传视频 +10、被点赞 +1/+2、完成一节课 +3；
+  段位 青铜(0) → 白银(50) → 黄金(200) → 铂金(500) → 钻石(1500)
+
+## 更新已部署后端到新版本（讨论赞 + 视频 + 段位）
+
+在服务器上：
+
+```bash
+cd /opt/chaonao-api   # 或你部署的路径
+git pull              # 或重新上传 server/ 目录
+npm install           # 会装 cos-nodejs-sdk-v5
+npm run migrate       # 增量建新表 + 创建 user_points() 函数
+# 填 COS 配置
+vim .env              # 填 COS_SECRET_ID / COS_SECRET_KEY / COS_BUCKET / COS_REGION
+pm2 restart superbrain-api
+pm2 logs superbrain-api --lines 30
+```
+
+## 腾讯云 COS 一次性配置
+
+1. 控制台 → 对象存储 → 创建桶（如 `superbrain-1300xxxxxx`，地域 `ap-nanjing`，权限“公有读私有写”）。
+2. 控制台 → 访问管理 CAM → 子用户，给它授权 `QcloudCOSDataFullControl`（或限定到该桶），
+   下载 `SecretId / SecretKey`，填到 `server/.env`。
+3. 桶 → 安全管理 → 跨域访问 CORS，添加规则：
+   - Origin：`https://你的前端域名`（如 `https://superbrain-studio.cn`）
+   - Methods：`GET, PUT, HEAD`
+   - Headers：`*`
+   - Expose Headers：`ETag`
+
+   没有这一步，浏览器直传 COS 会被 CORS 拦截。
 
 ## 一、本地或服务器准备
 
