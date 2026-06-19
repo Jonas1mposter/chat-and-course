@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { z } from "zod";
 import { q } from "../db.js";
-import { requireRole } from "../auth.js";
+import { requireAuth, requireRole } from "../auth.js";
 
 const r = Router();
 
