@@ -51,7 +51,7 @@ export function SiteHeader() {
           {loading ? null : user ? (
             <>
               <span className="hidden sm:inline text-sm text-muted-foreground">
-                <Link to="/u/$userId" params={{ userId: user.id }} className="hover:underline">
+                <Link to="/u/$userId" params={{ userId: user.sub }} className="hover:underline">
                   {user.name}
                 </Link>
                 <span className="ml-1 rounded bg-secondary px-1.5 py-0.5 text-xs">
