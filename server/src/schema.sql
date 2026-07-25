@@ -33,6 +33,27 @@ CREATE TABLE IF NOT EXISTS courses (
   updated_at   timestamptz NOT NULL DEFAULT now()
 );
 
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS requires_code   boolean NOT NULL DEFAULT false;
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS preview_lessons int     NOT NULL DEFAULT 1;
+ALTER TABLE courses ADD COLUMN IF NOT EXISTS cover_url       text    NOT NULL DEFAULT '';
+
+CREATE TABLE IF NOT EXISTS course_enrollments (
+  user_id   uuid REFERENCES users(id)   ON DELETE CASCADE,
+  course_id text REFERENCES courses(id) ON DELETE CASCADE,
+  joined_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, course_id)
+);
+
+CREATE TABLE IF NOT EXISTS course_codes (
+  code       text PRIMARY KEY,
+  course_id  text NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+  uses_left  int  NOT NULL DEFAULT 1,
+  created_by uuid REFERENCES users(id) ON DELETE SET NULL,
+  expires_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS course_codes_course_idx ON course_codes(course_id);
+
 CREATE TABLE IF NOT EXISTS posts (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   course_id    text REFERENCES courses(id) ON DELETE SET NULL,
@@ -78,6 +99,7 @@ CREATE TABLE IF NOT EXISTS videos (
   plays        int  NOT NULL DEFAULT 0,
   created_at   timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE videos ADD COLUMN IF NOT EXISTS cover_key text NOT NULL DEFAULT '';
 CREATE INDEX IF NOT EXISTS videos_owner_idx ON videos(owner_id);
 
 CREATE TABLE IF NOT EXISTS video_likes (
