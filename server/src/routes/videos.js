@@ -26,6 +26,20 @@ r.post("/sign-upload", requireAuth, async (req, res) => {
   }
 });
 
+// 封面单独直传 COS
+r.post("/sign-upload-cover", requireAuth, async (req, res) => {
+  const p = SignIn.safeParse(req.body);
+  if (!p.success) return res.status(400).json({ error: p.error.message });
+  const safe = p.data.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const key = `covers/${req.user.sub}/${Date.now()}-${randomUUID().slice(0, 8)}-${safe}`;
+  try {
+    const url = await presignPutUrl(key, 600);
+    res.json({ uploadUrl: url, key, publicUrl: publicUrlFor(key) });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 const CreateIn = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(2000).optional().default(""),

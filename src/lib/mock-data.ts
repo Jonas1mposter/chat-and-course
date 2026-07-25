@@ -10,6 +10,12 @@ export type Course = {
   category: string;
   emoji: string;
   lessonsList: { title: string; duration: string; videoUrl?: string }[];
+  published?: boolean;
+  requiresCode?: boolean;
+  previewLessons?: number;
+  coverUrl?: string;
+  ownerId?: string;
+  enrolled?: boolean;
 };
 
 export type Post = {
