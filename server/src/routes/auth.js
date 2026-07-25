@@ -47,4 +47,17 @@ r.get("/me", requireAuth, (req, res) => {
   res.json({ user: req.user });
 });
 
+// 首装向导：全站尚无管理员时，把当前登录用户升级为 admin
+r.post("/claim-admin", requireAuth, async (req, res) => {
+  const has = await q("SELECT 1 FROM users WHERE role='admin' LIMIT 1");
+  if (has.rowCount) return res.status(409).json({ error: "已有管理员，无法领取" });
+  await q("UPDATE users SET role='admin' WHERE id=$1", [req.user.sub]);
+  res.json({ ok: true });
+});
+
+r.get("/admin-exists", async (_req, res) => {
+  const has = await q("SELECT 1 FROM users WHERE role='admin' LIMIT 1");
+  res.json({ exists: !!has.rowCount });
+});
+
 export default r;
