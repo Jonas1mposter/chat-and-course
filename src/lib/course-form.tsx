@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import type { Course } from "@/lib/mock-data";
+import { api } from "@/lib/api";
 
 export type CourseFormValue = Course & { published?: boolean };
 
@@ -50,6 +51,40 @@ export function CourseForm({
   };
   const rmLesson = (i: number) =>
     set("lessonsList", v.lessonsList.filter((_, idx) => idx !== i));
+
+  const [uploading, setUploading] = useState<Record<number, number>>({});
+  const [uploadErr, setUploadErr] = useState<Record<number, string | null>>({});
+
+  async function uploadLessonVideo(i: number, file: File) {
+    setUploadErr((p) => ({ ...p, [i]: null }));
+    setUploading((p) => ({ ...p, [i]: 0 }));
+    try {
+      const sign = await api<{ uploadUrl: string; publicUrl: string }>(
+        "/api/videos/sign-upload",
+        { method: "POST", body: { filename: file.name, contentType: file.type || "application/octet-stream" } },
+      );
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", sign.uploadUrl);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) setUploading((p) => ({ ...p, [i]: Math.round((e.loaded / e.total) * 100) }));
+        };
+        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`COS 上传失败 ${xhr.status}`)));
+        xhr.onerror = () => reject(new Error("网络错误（可能是 COS 桶未配置 CORS）"));
+        xhr.send(file);
+      });
+      updLesson(i, { videoUrl: sign.publicUrl });
+    } catch (e) {
+      setUploadErr((p) => ({ ...p, [i]: (e as Error).message }));
+    } finally {
+      setUploading((p) => {
+        const n = { ...p };
+        delete n[i];
+        return n;
+      });
+    }
+  }
 
   return (
     <form
@@ -118,14 +153,37 @@ export function CourseForm({
             <p className="text-sm text-muted-foreground">还没有课时</p>
           )}
           {v.lessonsList.map((l, i) => (
-            <div key={i} className="grid grid-cols-[1fr_120px_1fr_auto] gap-2">
-              <Input placeholder="课时标题" value={l.title}
-                onChange={(e) => updLesson(i, { title: e.target.value })} />
-              <Input placeholder="时长 12:30" value={l.duration}
-                onChange={(e) => updLesson(i, { duration: e.target.value })} />
-              <Input placeholder="视频 URL（可选）" value={l.videoUrl ?? ""}
-                onChange={(e) => updLesson(i, { videoUrl: e.target.value })} />
-              <Button type="button" variant="ghost" size="sm" onClick={() => rmLesson(i)}>删</Button>
+            <div key={i} className="space-y-2 rounded-md border border-border/60 p-3">
+              <div className="grid grid-cols-[1fr_120px_auto] gap-2">
+                <Input placeholder="课时标题" value={l.title}
+                  onChange={(e) => updLesson(i, { title: e.target.value })} />
+                <Input placeholder="时长 12:30" value={l.duration}
+                  onChange={(e) => updLesson(i, { duration: e.target.value })} />
+                <Button type="button" variant="ghost" size="sm" onClick={() => rmLesson(i)}>删</Button>
+              </div>
+              <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
+                <Input placeholder="视频 URL（自动填充，或手动填）" value={l.videoUrl ?? ""}
+                  onChange={(e) => updLesson(i, { videoUrl: e.target.value })} />
+                <Input
+                  type="file"
+                  accept="video/*"
+                  className="w-auto"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) uploadLessonVideo(i, f);
+                    e.currentTarget.value = "";
+                  }}
+                />
+              </div>
+              {uploading[i] !== undefined && (
+                <div>
+                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                    <div className="h-full bg-primary transition-all" style={{ width: `${uploading[i]}%` }} />
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">上传中 {uploading[i]}%</p>
+                </div>
+              )}
+              {uploadErr[i] && <p className="text-xs text-destructive">{uploadErr[i]}</p>}
             </div>
           ))}
         </div>
