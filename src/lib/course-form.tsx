@@ -34,6 +34,9 @@ export function CourseForm({
     emoji: initial?.emoji ?? "📘",
     lessonsList: initial?.lessonsList ?? [],
     published: initial?.published ?? false,
+    requiresCode: initial?.requiresCode ?? false,
+    previewLessons: initial?.previewLessons ?? 1,
+    coverUrl: initial?.coverUrl ?? "",
   });
   const set = <K extends keyof CourseFormValue>(k: K, val: CourseFormValue[K]) =>
     setV((p) => ({ ...p, [k]: val }));
@@ -64,6 +67,10 @@ export function CourseForm({
             <Label htmlFor="emoji">封面 Emoji</Label>
             <Input id="emoji" value={v.emoji} onChange={(e) => set("emoji", e.target.value)} />
           </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cover">封面图 URL（可选）</Label>
+          <Input id="cover" value={v.coverUrl ?? ""} onChange={(e) => set("coverUrl", e.target.value)} placeholder="https://..." />
         </div>
         <div className="space-y-2">
           <Label htmlFor="t">标题</Label>
@@ -121,6 +128,30 @@ export function CourseForm({
               <Button type="button" variant="ghost" size="sm" onClick={() => rmLesson(i)}>删</Button>
             </div>
           ))}
+        </div>
+      </Card>
+
+      <Card className="border-border/60 p-6 space-y-4">
+        <h3 className="font-semibold">访问控制</h3>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>试看课时数</Label>
+            <Input
+              type="number"
+              min={0}
+              value={v.previewLessons ?? 1}
+              onChange={(e) => set("previewLessons", Math.max(0, Number(e.target.value) || 0))}
+            />
+            <p className="text-xs text-muted-foreground">未加入的用户能免费看前 N 节。</p>
+          </div>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <input type="checkbox" checked={!!v.requiresCode}
+                onChange={(e) => set("requiresCode", e.target.checked)} />
+              加入需要兑换码
+            </Label>
+            <p className="text-xs text-muted-foreground">勾选后学员必须输入你生成的码才能加入。</p>
+          </div>
         </div>
       </Card>
 

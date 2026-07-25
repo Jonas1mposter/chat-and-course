@@ -21,6 +21,8 @@ function NewVideoPage() {
   const [description, setDescription] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [coverUrl, setCoverUrl] = useState("");
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverBusy, setCoverBusy] = useState(false);
   const [progress, setProgress] = useState(0);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -59,6 +61,17 @@ function NewVideoPage() {
     setBusy(true);
     setProgress(0);
     try {
+      let finalCoverUrl = coverUrl.trim();
+      if (coverFile) {
+        setCoverBusy(true);
+        const sc = await api<{ uploadUrl: string; publicUrl: string }>(
+          "/api/videos/sign-upload-cover",
+          { method: "POST", body: { filename: coverFile.name, contentType: coverFile.type || "image/jpeg" } },
+        );
+        await uploadToCOS(sc.uploadUrl, coverFile);
+        finalCoverUrl = sc.publicUrl;
+        setCoverBusy(false);
+      }
       const sign = await api<{ uploadUrl: string; key: string; publicUrl: string }>(
         "/api/videos/sign-upload",
         { method: "POST", body: { filename: file.name, contentType: file.type || "application/octet-stream" } },
@@ -71,7 +84,7 @@ function NewVideoPage() {
           title: title.trim(),
           description,
           cosKey: sign.key,
-          coverUrl: coverUrl.trim(),
+          coverUrl: finalCoverUrl,
           sizeBytes: file.size,
         },
       });
@@ -80,6 +93,7 @@ function NewVideoPage() {
       setErr((e as Error).message);
     } finally {
       setBusy(false);
+      setCoverBusy(false);
     }
   }
 
@@ -105,6 +119,16 @@ function NewVideoPage() {
         <div>
           <Label htmlFor="c">封面图 URL（可选）</Label>
           <Input id="c" value={coverUrl} onChange={(e) => setCoverUrl(e.target.value)} placeholder="https://..." />
+        </div>
+        <div>
+          <Label htmlFor="cf">或直接上传封面图（可选，会覆盖上面的 URL）</Label>
+          <Input
+            id="cf"
+            type="file"
+            accept="image/*"
+            onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
+          />
+          {coverBusy && <p className="mt-1 text-xs text-muted-foreground">封面上传中…</p>}
         </div>
         <div>
           <Label htmlFor="f">视频文件</Label>
