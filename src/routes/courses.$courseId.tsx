@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Course } from "@/lib/mock-data";
@@ -50,9 +51,33 @@ function CourseDetail() {
 }
 
 function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const firstPlayable = course.lessonsList.findIndex((l) => l.videoUrl);
   const [activeIdx, setActiveIdx] = useState(firstPlayable >= 0 ? firstPlayable : 0);
   const activeLesson = course.lessonsList[activeIdx];
+  const [code, setCode] = useState("");
+  const [showCode, setShowCode] = useState(false);
+  const enrolled = !!course.enrolled;
+
+  const join = useMutation({
+    mutationFn: (c?: string) =>
+      api(`/api/courses/${course.id}/join`, {
+        method: "POST",
+        body: c ? { code: c } : {},
+      }),
+    onSuccess: () => {
+      setShowCode(false);
+      setCode("");
+      qc.invalidateQueries({ queryKey: ["course", course.id] });
+    },
+  });
+
+  const onJoinClick = () => {
+    if (!user) return;
+    if (course.requiresCode) setShowCode(true);
+    else join.mutate(undefined);
+  };
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-12">
@@ -83,6 +108,12 @@ function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
               <div className="flex gap-2">
                 <Badge variant="secondary">{course.category}</Badge>
                 <Badge variant="outline">{course.level}</Badge>
+                {course.requiresCode && !enrolled && (
+                  <Badge className="bg-accent text-accent-foreground">需要兑换码</Badge>
+                )}
+                {enrolled && (
+                  <Badge className="bg-primary text-primary-foreground">已加入</Badge>
+                )}
               </div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">
                 {course.title}
@@ -107,7 +138,9 @@ function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
                 ) : (
                   <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 text-muted-foreground">
                     <Lock className="h-8 w-8" />
-                    <span className="text-sm">该课时暂未上传视频</span>
+                    <span className="text-sm">
+                      {enrolled ? "该课时暂未上传视频" : "加入课程后可观看此课时"}
+                    </span>
                   </div>
                 )}
               </div>
@@ -140,6 +173,9 @@ function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
                     <Lock className="h-5 w-5 text-muted-foreground" />
                   )}
                   <span className="flex-1 font-medium">{l.title}</span>
+                  {!l.videoUrl && !enrolled && i >= (course.previewLessons ?? 1) && (
+                    <Badge variant="outline" className="text-[10px]">加入解锁</Badge>
+                  )}
                   <span className="text-sm text-muted-foreground">{l.duration}</span>
                 </button>
               ))}
@@ -149,14 +185,53 @@ function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
 
         <aside className="lg:sticky lg:top-24 lg:h-fit">
           <Card className="border-border/60 p-6">
-            <div className="text-3xl font-semibold">免费试学</div>
-            <p className="mt-1 text-sm text-muted-foreground">加入后可观看全部课程</p>
-            <Button className="mt-4 w-full" size="lg">
-              立即加入
-            </Button>
-            <Button variant="outline" className="mt-2 w-full">
-              收藏课程
-            </Button>
+            <div className="text-3xl font-semibold">
+              {enrolled ? "继续学习" : course.requiresCode ? "凭码加入" : "免费试学"}
+            </div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {enrolled
+                ? "你已经加入本课程"
+                : `未加入可试看前 ${course.previewLessons ?? 1} 节`}
+            </p>
+            {!user ? (
+              <Button asChild className="mt-4 w-full" size="lg">
+                <Link to="/auth" search={{ mode: "login", redirect: `/courses/${course.id}` }}>
+                  登录后加入
+                </Link>
+              </Button>
+            ) : enrolled ? (
+              <Button className="mt-4 w-full" size="lg" disabled>已加入</Button>
+            ) : showCode ? (
+              <div className="mt-4 space-y-2">
+                <Input
+                  placeholder="输入兑换码"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                />
+                <div className="flex gap-2">
+                  <Button
+                    className="flex-1"
+                    disabled={!code.trim() || join.isPending}
+                    onClick={() => join.mutate(code.trim())}
+                  >
+                    {join.isPending ? "兑换中…" : "确认兑换"}
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowCode(false)}>取消</Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                className="mt-4 w-full"
+                size="lg"
+                onClick={onJoinClick}
+                disabled={join.isPending}
+              >
+                {join.isPending ? "加入中…" : course.requiresCode ? "输入兑换码" : "立即加入"}
+              </Button>
+            )}
+            {join.error && (
+              <p className="mt-2 text-sm text-destructive">{(join.error as Error).message}</p>
+            )}
             <div className="mt-6 space-y-3 text-sm">
               <Row icon={BookOpen} label="课时" value={`${course.lessons} 节`} />
               <Row icon={Clock} label="时长" value={course.duration} />

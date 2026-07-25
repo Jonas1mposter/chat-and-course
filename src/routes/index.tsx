@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BookOpen, MessageSquare, Users, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { courses, posts } from "@/lib/mock-data";
+import { api } from "@/lib/api";
+import type { Course, Post } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -19,6 +21,14 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const { data: courses = [] } = useQuery({
+    queryKey: ["courses"],
+    queryFn: () => api<Course[]>("/api/courses"),
+  });
+  const { data: posts = [] } = useQuery({
+    queryKey: ["posts", "全部"],
+    queryFn: () => api<Post[]>("/api/posts"),
+  });
   const featured = courses.slice(0, 3);
   const hotPosts = posts.slice(0, 3);
 
@@ -92,6 +102,11 @@ function Index() {
           </Link>
         </div>
         <div className="mt-10 grid gap-6 md:grid-cols-3">
+          {featured.length === 0 && (
+            <div className="col-span-full rounded-lg border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
+              还没有已发布的课程
+            </div>
+          )}
           {featured.map((c) => (
             <Link key={c.id} to="/courses/$courseId" params={{ courseId: c.id }}>
               <Card className="group h-full overflow-hidden border-border/60 p-6 transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]">
@@ -136,6 +151,11 @@ function Index() {
             </Link>
           </div>
           <div className="mt-10 space-y-3">
+            {hotPosts.length === 0 && (
+              <div className="rounded-lg border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
+                还没有帖子
+              </div>
+            )}
             {hotPosts.map((p) => (
               <Link key={p.id} to="/discussions/$postId" params={{ postId: p.id }}>
                 <Card className="flex items-center gap-4 border-border/60 p-5 transition-colors hover:bg-card">

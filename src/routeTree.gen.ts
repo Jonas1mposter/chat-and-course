@@ -22,6 +22,7 @@ import { Route as DiscussionsNewRouteImport } from './routes/discussions.new'
 import { Route as DiscussionsPostIdRouteImport } from './routes/discussions.$postId'
 import { Route as CoursesNewRouteImport } from './routes/courses.new'
 import { Route as CoursesCourseIdRouteImport } from './routes/courses.$courseId'
+import { Route as AdminSetupRouteImport } from './routes/admin.setup'
 import { Route as CoursesCourseIdEditRouteImport } from './routes/courses.$courseId.edit'
 
 const VideosRoute = VideosRouteImport.update({
@@ -89,6 +90,11 @@ const CoursesCourseIdRoute = CoursesCourseIdRouteImport.update({
   path: '/$courseId',
   getParentRoute: () => CoursesRoute,
 } as any)
+const AdminSetupRoute = AdminSetupRouteImport.update({
+  id: '/admin/setup',
+  path: '/admin/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoursesCourseIdEditRoute = CoursesCourseIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/discussions': typeof DiscussionsRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/videos': typeof VideosRouteWithChildren
+  '/admin/setup': typeof AdminSetupRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/discussions': typeof DiscussionsRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/videos': typeof VideosRouteWithChildren
+  '/admin/setup': typeof AdminSetupRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/discussions': typeof DiscussionsRouteWithChildren
   '/leaderboard': typeof LeaderboardRoute
   '/videos': typeof VideosRouteWithChildren
+  '/admin/setup': typeof AdminSetupRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/discussions'
     | '/leaderboard'
     | '/videos'
+    | '/admin/setup'
     | '/courses/$courseId'
     | '/courses/new'
     | '/discussions/$postId'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/discussions'
     | '/leaderboard'
     | '/videos'
+    | '/admin/setup'
     | '/courses/$courseId'
     | '/courses/new'
     | '/discussions/$postId'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/discussions'
     | '/leaderboard'
     | '/videos'
+    | '/admin/setup'
     | '/courses/$courseId'
     | '/courses/new'
     | '/discussions/$postId'
@@ -202,6 +214,7 @@ export interface RootRouteChildren {
   DiscussionsRoute: typeof DiscussionsRouteWithChildren
   LeaderboardRoute: typeof LeaderboardRoute
   VideosRoute: typeof VideosRouteWithChildren
+  AdminSetupRoute: typeof AdminSetupRoute
   UUserIdRoute: typeof UUserIdRoute
 }
 
@@ -298,6 +311,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoursesCourseIdRouteImport
       parentRoute: typeof CoursesRoute
     }
+    '/admin/setup': {
+      id: '/admin/setup'
+      path: '/admin/setup'
+      fullPath: '/admin/setup'
+      preLoaderRoute: typeof AdminSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/courses/$courseId/edit': {
       id: '/courses/$courseId/edit'
       path: '/edit'
@@ -367,6 +387,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiscussionsRoute: DiscussionsRouteWithChildren,
   LeaderboardRoute: LeaderboardRoute,
   VideosRoute: VideosRouteWithChildren,
+  AdminSetupRoute: AdminSetupRoute,
   UUserIdRoute: UUserIdRoute,
 }
 export const routeTree = rootRouteImport
