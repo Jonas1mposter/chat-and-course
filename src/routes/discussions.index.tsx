@@ -12,7 +12,7 @@ import { TierBadge } from "@/components/tier-badge";
 
 const categories = ["全部", "公告", "前端开发", "产品设计", "AI 应用", "运营增长", "讨论"];
 
-export const Route = createFileRoute("/discussions")({
+export const Route = createFileRoute("/discussions/")({
   head: () => ({
     meta: [
       { title: "讨论区 — 超脑 Studio" },
