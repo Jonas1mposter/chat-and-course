@@ -19,7 +19,7 @@ type Video = {
   createdAt: string;
 };
 
-export const Route = createFileRoute("/videos")({
+export const Route = createFileRoute("/videos/")({
   head: () => ({
     meta: [
       { title: "视频 — 超脑 Studio" },
