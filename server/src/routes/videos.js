@@ -14,9 +14,9 @@ const SignIn = z.object({
 });
 
 // 兼容：如果 COS 已配置，保留原来的预签名直传；否则用本地存储
-function resolvePublicUrl(key) {
+function resolvePublicUrl(key, req) {
   if (cosIsConfigured()) return cosPublicUrlFor(key);
-  return localPublicUrlFor(key);
+  return localPublicUrlFor(key, req);
 }
 
 // 1a) 获取 COS 上传预签名（仅 COS 配置时有效）
@@ -38,7 +38,7 @@ r.post("/sign-upload", requireAuth, async (req, res) => {
 r.post("/upload", requireAuth, uploaderFor("videos").single("file"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "没有收到文件" });
   const key = `videos/${req.file.filename}`;
-  res.json({ key, publicUrl: localPublicUrlFor(key), sizeBytes: req.file.size });
+  res.json({ key, publicUrl: localPublicUrlFor(key, req), sizeBytes: req.file.size });
 });
 
 // 2a) 获取 COS 封面上传预签名
@@ -60,7 +60,7 @@ r.post("/sign-upload-cover", requireAuth, async (req, res) => {
 r.post("/upload-cover", requireAuth, uploaderFor("covers").single("file"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "没有收到文件" });
   const key = `covers/${req.file.filename}`;
-  res.json({ key, publicUrl: localPublicUrlFor(key) });
+  res.json({ key, publicUrl: localPublicUrlFor(key, req) });
 });
 
 const CreateIn = z.object({
