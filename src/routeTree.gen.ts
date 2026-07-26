@@ -23,6 +23,7 @@ import { Route as DiscussionsPostIdRouteImport } from './routes/discussions.$pos
 import { Route as CoursesNewRouteImport } from './routes/courses.new'
 import { Route as CoursesCourseIdRouteImport } from './routes/courses.$courseId'
 import { Route as AdminSetupRouteImport } from './routes/admin.setup'
+import { Route as CoursesCourseIdIndexRouteImport } from './routes/courses.$courseId.index'
 import { Route as CoursesCourseIdEditRouteImport } from './routes/courses.$courseId.edit'
 
 const LeaderboardRoute = LeaderboardRouteImport.update({
@@ -95,6 +96,11 @@ const AdminSetupRoute = AdminSetupRouteImport.update({
   path: '/admin/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CoursesCourseIdIndexRoute = CoursesCourseIdIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => CoursesCourseIdRoute,
+} as any)
 const CoursesCourseIdEditRoute = CoursesCourseIdEditRouteImport.update({
   id: '/edit',
   path: '/edit',
@@ -117,13 +123,13 @@ export interface FileRoutesByFullPath {
   '/discussions/': typeof DiscussionsIndexRoute
   '/videos/': typeof VideosIndexRoute
   '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
+  '/courses/$courseId/': typeof CoursesCourseIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/leaderboard': typeof LeaderboardRoute
   '/admin/setup': typeof AdminSetupRoute
-  '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
   '/discussions/new': typeof DiscussionsNewRoute
@@ -134,6 +140,7 @@ export interface FileRoutesByTo {
   '/discussions': typeof DiscussionsIndexRoute
   '/videos': typeof VideosIndexRoute
   '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
+  '/courses/$courseId': typeof CoursesCourseIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -152,6 +159,7 @@ export interface FileRoutesById {
   '/discussions/': typeof DiscussionsIndexRoute
   '/videos/': typeof VideosIndexRoute
   '/courses/$courseId/edit': typeof CoursesCourseIdEditRoute
+  '/courses/$courseId/': typeof CoursesCourseIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -171,13 +179,13 @@ export interface FileRouteTypes {
     | '/discussions/'
     | '/videos/'
     | '/courses/$courseId/edit'
+    | '/courses/$courseId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/leaderboard'
     | '/admin/setup'
-    | '/courses/$courseId'
     | '/courses/new'
     | '/discussions/$postId'
     | '/discussions/new'
@@ -188,6 +196,7 @@ export interface FileRouteTypes {
     | '/discussions'
     | '/videos'
     | '/courses/$courseId/edit'
+    | '/courses/$courseId'
   id:
     | '__root__'
     | '/'
@@ -205,6 +214,7 @@ export interface FileRouteTypes {
     | '/discussions/'
     | '/videos/'
     | '/courses/$courseId/edit'
+    | '/courses/$courseId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -324,6 +334,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/courses/$courseId/': {
+      id: '/courses/$courseId/'
+      path: '/'
+      fullPath: '/courses/$courseId/'
+      preLoaderRoute: typeof CoursesCourseIdIndexRouteImport
+      parentRoute: typeof CoursesCourseIdRoute
+    }
     '/courses/$courseId/edit': {
       id: '/courses/$courseId/edit'
       path: '/edit'
@@ -336,10 +353,12 @@ declare module '@tanstack/react-router' {
 
 interface CoursesCourseIdRouteChildren {
   CoursesCourseIdEditRoute: typeof CoursesCourseIdEditRoute
+  CoursesCourseIdIndexRoute: typeof CoursesCourseIdIndexRoute
 }
 
 const CoursesCourseIdRouteChildren: CoursesCourseIdRouteChildren = {
   CoursesCourseIdEditRoute: CoursesCourseIdEditRoute,
+  CoursesCourseIdIndexRoute: CoursesCourseIdIndexRoute,
 }
 
 const CoursesCourseIdRouteWithChildren = CoursesCourseIdRoute._addFileChildren(
