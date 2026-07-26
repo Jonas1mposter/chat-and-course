@@ -38,20 +38,6 @@ function NewVideoPage() {
     );
   }
 
-  async function uploadToCOS(uploadUrl: string, f: File) {
-    return new Promise<void>((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("PUT", uploadUrl);
-      xhr.setRequestHeader("Content-Type", f.type || "application/octet-stream");
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100));
-      };
-      xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`COS 上传失败 ${xhr.status}`)));
-      xhr.onerror = () => reject(new Error("网络错误（可能是 COS 桶未配置 CORS）"));
-      xhr.send(f);
-    });
-  }
-
   async function submit() {
     if (!file || !title.trim()) {
       setErr("请填写标题并选择视频文件");
@@ -64,28 +50,26 @@ function NewVideoPage() {
       let finalCoverUrl = coverUrl.trim();
       if (coverFile) {
         setCoverBusy(true);
-        const sc = await api<{ uploadUrl: string; publicUrl: string }>(
-          "/api/videos/sign-upload-cover",
-          { method: "POST", body: { filename: coverFile.name, contentType: coverFile.type || "image/jpeg" } },
+        const sc = await uploadFile<{ key: string; publicUrl: string }>(
+          "/api/videos/upload-cover",
+          coverFile,
         );
-        await uploadToCOS(sc.uploadUrl, coverFile);
         finalCoverUrl = sc.publicUrl;
         setCoverBusy(false);
       }
-      const sign = await api<{ uploadUrl: string; key: string; publicUrl: string }>(
-        "/api/videos/sign-upload",
-        { method: "POST", body: { filename: file.name, contentType: file.type || "application/octet-stream" } },
+      const res = await uploadFile<{ key: string; publicUrl: string; sizeBytes: number }>(
+        "/api/videos/upload",
+        file,
+        (p) => setProgress(p),
       );
-      if (!getToken()) throw new Error("登录状态丢失，请重新登录");
-      await uploadToCOS(sign.uploadUrl, file);
       const created = await api<{ id: string }>("/api/videos", {
         method: "POST",
         body: {
           title: title.trim(),
           description,
-          cosKey: sign.key,
+          cosKey: res.key,
           coverUrl: finalCoverUrl,
-          sizeBytes: file.size,
+          sizeBytes: res.sizeBytes ?? file.size,
         },
       });
       nav({ to: "/videos/$videoId", params: { videoId: created.id } });
