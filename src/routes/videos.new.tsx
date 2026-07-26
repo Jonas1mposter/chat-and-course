@@ -88,7 +88,7 @@ function NewVideoPage() {
       </Link>
       <h1 className="mt-4 text-3xl font-semibold tracking-tight">上传视频</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        视频会通过预签名 URL 直传腾讯云 COS，服务器不中转流量。
+        视频将上传到服务器本地存储（无需 COS 存储桶），服务器会自动提供播放地址。
       </p>
 
       <Card className="mt-6 space-y-4 p-6">
