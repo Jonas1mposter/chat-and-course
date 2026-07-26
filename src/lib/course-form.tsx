@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import type { Course } from "@/lib/mock-data";
-import { api } from "@/lib/api";
+import { api, uploadFile } from "@/lib/api";
 
 export type CourseFormValue = Course & { published?: boolean };
 
@@ -59,22 +59,12 @@ export function CourseForm({
     setUploadErr((p) => ({ ...p, [i]: null }));
     setUploading((p) => ({ ...p, [i]: 0 }));
     try {
-      const sign = await api<{ uploadUrl: string; publicUrl: string }>(
-        "/api/videos/sign-upload",
-        { method: "POST", body: { filename: file.name, contentType: file.type || "application/octet-stream" } },
+      const res = await uploadFile<{ key: string; publicUrl: string }>(
+        "/api/videos/upload",
+        file,
+        (p) => setUploading((prev) => ({ ...prev, [i]: p })),
       );
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", sign.uploadUrl);
-        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-        xhr.upload.onprogress = (e) => {
-          if (e.lengthComputable) setUploading((p) => ({ ...p, [i]: Math.round((e.loaded / e.total) * 100) }));
-        };
-        xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`COS 上传失败 ${xhr.status}`)));
-        xhr.onerror = () => reject(new Error("网络错误（可能是 COS 桶未配置 CORS）"));
-        xhr.send(file);
-      });
-      updLesson(i, { videoUrl: sign.publicUrl });
+      updLesson(i, { videoUrl: res.publicUrl });
     } catch (e) {
       setUploadErr((p) => ({ ...p, [i]: (e as Error).message }));
     } finally {

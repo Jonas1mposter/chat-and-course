@@ -19,6 +19,10 @@ export function getCOS() {
   return cos;
 }
 
+export function isConfigured() {
+  return !!(COS_SECRET_ID && COS_SECRET_KEY && COS_BUCKET && COS_REGION);
+}
+
 // 生成一个 PUT 预签名 URL，前端可直接 PUT 上传到 COS
 export function presignPutUrl(key, expiresSec = 600) {
   const c = getCOS();

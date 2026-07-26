@@ -3,7 +3,8 @@ import { z } from "zod";
 import { randomUUID } from "crypto";
 import { q } from "../db.js";
 import { requireAuth } from "../auth.js";
-import { presignPutUrl, publicUrlFor } from "../cos.js";
+import { presignPutUrl, publicUrlFor as cosPublicUrlFor, isConfigured as cosIsConfigured } from "../cos.js";
+import { publicUrlFor as localPublicUrlFor, uploaderFor } from "../uploads.js";
 
 const r = Router();
 
@@ -12,49 +13,71 @@ const SignIn = z.object({
   contentType: z.string().min(1).max(100),
 });
 
-// 1) 获取上传预签名
+// 兼容：如果 COS 已配置，保留原来的预签名直传；否则用本地存储
+function resolvePublicUrl(key, req) {
+  if (cosIsConfigured()) return cosPublicUrlFor(key);
+  return localPublicUrlFor(key, req);
+}
+
+// 1a) 获取 COS 上传预签名（仅 COS 配置时有效）
 r.post("/sign-upload", requireAuth, async (req, res) => {
+  if (!cosIsConfigured()) return res.status(400).json({ error: "当前未启用 COS，请使用 /upload" });
   const p = SignIn.safeParse(req.body);
   if (!p.success) return res.status(400).json({ error: p.error.message });
   const safe = p.data.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
   const key = `videos/${req.user.sub}/${Date.now()}-${randomUUID().slice(0, 8)}-${safe}`;
   try {
     const url = await presignPutUrl(key, 600);
-    res.json({ uploadUrl: url, key, publicUrl: publicUrlFor(key) });
+    res.json({ uploadUrl: url, key, publicUrl: cosPublicUrlFor(key) });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// 封面单独直传 COS
+// 1b) 本地服务器接收视频文件（无 COS 时的默认方案）
+r.post("/upload", requireAuth, uploaderFor("videos").single("file"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "没有收到文件" });
+  const key = `videos/${req.file.filename}`;
+  res.json({ key, publicUrl: localPublicUrlFor(key, req), sizeBytes: req.file.size });
+});
+
+// 2a) 获取 COS 封面上传预签名
 r.post("/sign-upload-cover", requireAuth, async (req, res) => {
+  if (!cosIsConfigured()) return res.status(400).json({ error: "当前未启用 COS，请使用 /upload-cover" });
   const p = SignIn.safeParse(req.body);
   if (!p.success) return res.status(400).json({ error: p.error.message });
   const safe = p.data.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
   const key = `covers/${req.user.sub}/${Date.now()}-${randomUUID().slice(0, 8)}-${safe}`;
   try {
     const url = await presignPutUrl(key, 600);
-    res.json({ uploadUrl: url, key, publicUrl: publicUrlFor(key) });
+    res.json({ uploadUrl: url, key, publicUrl: cosPublicUrlFor(key) });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+// 2b) 本地服务器接收封面文件
+r.post("/upload-cover", requireAuth, uploaderFor("covers").single("file"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "没有收到文件" });
+  const key = `covers/${req.file.filename}`;
+  res.json({ key, publicUrl: localPublicUrlFor(key, req) });
 });
 
 const CreateIn = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(2000).optional().default(""),
   cosKey: z.string().min(1),
-  coverUrl: z.string().url().optional().or(z.literal("")).default(""),
+  coverUrl: z.string().optional().or(z.literal("")).default(""),
   duration: z.number().int().nonnegative().optional().default(0),
   sizeBytes: z.number().int().nonnegative().optional().default(0),
 });
 
-// 2) 创建视频记录
+// 3) 创建视频记录
 r.post("/", requireAuth, async (req, res) => {
   const p = CreateIn.safeParse(req.body);
   if (!p.success) return res.status(400).json({ error: p.error.message });
   const { title, description, cosKey, coverUrl, duration, sizeBytes } = p.data;
-  const url = publicUrlFor(cosKey);
+  const url = resolvePublicUrl(cosKey, req);
   const { rows } = await q(
     `INSERT INTO videos(owner_id,title,description,cos_key,url,cover_url,duration,size_bytes)
      VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
@@ -63,7 +86,7 @@ r.post("/", requireAuth, async (req, res) => {
   res.json({ id: rows[0].id });
 });
 
-// 3) 视频列表
+// 4) 视频列表
 r.get("/", async (req, res) => {
   const ownerId = req.query.ownerId;
   const params = [];
@@ -83,7 +106,7 @@ r.get("/", async (req, res) => {
   res.json(rows.map(rowToVideo));
 });
 
-// 4) 视频详情（顺便 +1 播放数）
+// 5) 视频详情（顺便 +1 播放数）
 r.get("/:id", async (req, res) => {
   const me = req.user?.sub || null;
   const { rows } = await q(
@@ -98,7 +121,7 @@ r.get("/:id", async (req, res) => {
   res.json(rowToVideo(rows[0]));
 });
 
-// 5) 点赞 / 取消点赞
+// 6) 点赞 / 取消点赞
 r.post("/:id/like", requireAuth, async (req, res) => {
   const ex = await q(
     "SELECT 1 FROM video_likes WHERE video_id=$1 AND user_id=$2",
@@ -118,7 +141,7 @@ r.post("/:id/like", requireAuth, async (req, res) => {
   }
 });
 
-// 6) 删除
+// 7) 删除
 r.delete("/:id", requireAuth, async (req, res) => {
   const own = await q("SELECT owner_id FROM videos WHERE id=$1", [req.params.id]);
   if (!own.rowCount) return res.json({ ok: true });
