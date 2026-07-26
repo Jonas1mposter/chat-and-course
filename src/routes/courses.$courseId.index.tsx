@@ -10,7 +10,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Course } from "@/lib/mock-data";
 
-export const Route = createFileRoute("/courses/$courseId")({
+export const Route = createFileRoute("/courses/$courseId/")({
   head: () => ({ meta: [{ title: "课程详情 — 超脑 Studio" }] }),
   component: CourseDetail,
   notFoundComponent: () => (
