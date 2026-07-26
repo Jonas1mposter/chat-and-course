@@ -29,9 +29,13 @@ export function storageFor(subfolder) {
   });
 }
 
-/** 返回完整可访问 URL；未配置 UPLOADS_BASE_URL 时返回 key 让前端自行拼接 */
-export function publicUrlFor(key) {
-  const base = process.env.UPLOADS_BASE_URL || process.env.API_BASE_URL || "";
+/** 返回完整可访问 URL；优先使用 env，其次根据请求头推断，否则返回 key */
+export function publicUrlFor(key, req) {
+  const base =
+    process.env.UPLOADS_BASE_URL ||
+    process.env.API_BASE_URL ||
+    (req ? `${req.protocol}://${req.get("host")}` : "") ||
+    "";
   if (base) {
     return `${base.replace(/\/$/, "")}/uploads/${key}`;
   }
