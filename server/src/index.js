@@ -1,6 +1,8 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
+import { resolve } from "path";
+import { fileURLToPath } from "url";
 
 import { authOptional } from "./auth.js";
 import auth from "./routes/auth.js";
@@ -9,8 +11,10 @@ import posts from "./routes/posts.js";
 import videos from "./routes/videos.js";
 import users from "./routes/users.js";
 import admin from "./routes/admin.js";
+import { ensureUploadsDir, UPLOADS_DIR } from "./uploads.js";
 
 const app = express();
+app.set("trust proxy", true);
 app.use(express.json({ limit: "1mb" }));
 app.use(
   cors({
@@ -19,6 +23,9 @@ app.use(
   }),
 );
 app.use(authOptional);
+
+ensureUploadsDir();
+app.use("/uploads", express.static(UPLOADS_DIR, { maxAge: "1d" }));
 
 app.get("/api/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
 app.use("/api/auth", auth);
