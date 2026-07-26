@@ -77,7 +77,7 @@ r.post("/", requireAuth, async (req, res) => {
   const p = CreateIn.safeParse(req.body);
   if (!p.success) return res.status(400).json({ error: p.error.message });
   const { title, description, cosKey, coverUrl, duration, sizeBytes } = p.data;
-  const url = resolvePublicUrl(cosKey);
+  const url = resolvePublicUrl(cosKey, req);
   const { rows } = await q(
     `INSERT INTO videos(owner_id,title,description,cos_key,url,cover_url,duration,size_bytes)
      VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
