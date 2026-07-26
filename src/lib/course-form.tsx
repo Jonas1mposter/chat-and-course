@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import type { Course } from "@/lib/mock-data";
-import { api } from "@/lib/api";
+import { api, uploadFile } from "@/lib/api";
 
 export type CourseFormValue = Course & { published?: boolean };
 
