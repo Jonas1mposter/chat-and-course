@@ -95,12 +95,39 @@ export function CourseForm({
     setUploadErr((p) => ({ ...p, [i]: null }));
     setUploading((p) => ({ ...p, [i]: 0 }));
     try {
-      const res = await uploadFile<{ key: string; publicUrl: string }>(
-        "/api/videos/upload",
-        file,
-        (p) => setUploading((prev) => ({ ...prev, [i]: p })),
+      // 1) 找后端拿 COS 预签名 PUT URL
+      const { uploadUrl, publicUrl } = await api<{ uploadUrl: string; publicUrl: string }>(
+        "/api/videos/sign-upload",
+        {
+          method: "POST",
+          body: {
+            filename: file.name,
+            contentType: file.type || "video/mp4",
+          },
+        },
       );
-      updLesson(i, { videoUrl: res.publicUrl });
+      // 2) 直接 PUT 到 COS
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl);
+        xhr.setRequestHeader("Content-Type", file.type || "video/mp4");
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setUploading((prev) => ({ ...prev, [i]: Math.round((e.loaded / e.total) * 100) }));
+          }
+        };
+        xhr.onload = () => {
+          if (xhr.status < 200 || xhr.status >= 300) {
+            return reject(new Error(`COS 上传失败 ${xhr.status}`));
+          }
+          resolve();
+        };
+        xhr.onerror = () => reject(new Error("网络错误，上传失败"));
+        xhr.onabort = () => reject(new Error("上传已取消"));
+        xhr.send(file);
+      });
+      // 3) 把最终播放地址写回课时
+      updLesson(i, { videoUrl: publicUrl });
     } catch (e) {
       setUploadErr((p) => ({ ...p, [i]: (e as Error).message }));
     } finally {
