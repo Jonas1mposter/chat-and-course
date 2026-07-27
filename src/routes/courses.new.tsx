@@ -34,7 +34,12 @@ function NewCourse() {
     <main className="mx-auto max-w-3xl px-6 py-12">
       <h1 className="text-3xl font-semibold tracking-tight">新建课程</h1>
       <div className="mt-6">
-        <CourseForm submitting={create.isPending} submitLabel="创建课程" onSubmit={(v) => create.mutate(v)} />
+        <CourseForm
+          persistKey="new"
+          submitting={create.isPending}
+          submitLabel="创建课程"
+          onSubmit={(v) => create.mutate(v)}
+        />
         {create.error && (
           <p className="mt-4 text-sm text-destructive">{(create.error as Error).message}</p>
         )}
