@@ -31,20 +31,23 @@ function Index() {
   });
   const featured = courses.slice(0, 3);
   const hotPosts = posts.slice(0, 3);
+  const hero = courses[0];
+  const totalStudents = courses.reduce((s, c) => s + (c.students || 0), 0);
 
   return (
     <main>
       {/* Hero */}
-      <section className="relative overflow-hidden">
+      <section className="relative isolate overflow-hidden">
         <div
-          className="absolute inset-0 -z-10 opacity-90"
+          className="absolute inset-0 -z-10"
           style={{ background: "var(--gradient-hero)" }}
         />
         <div
           className="absolute -right-32 -top-32 -z-10 h-96 w-96 rounded-full opacity-40 blur-3xl"
           style={{ background: "var(--gradient-warm)" }}
         />
-        <div className="mx-auto max-w-6xl px-6 py-24 text-primary-foreground">
+        <div className="mx-auto grid max-w-6xl gap-12 px-6 py-24 text-primary-foreground lg:grid-cols-[1.1fr_1fr] lg:items-center">
+         <div>
           <Badge className="bg-primary-foreground/15 text-primary-foreground border-none backdrop-blur">
             <Sparkles className="mr-1 h-3 w-3" /> 学习型社群 · 持续更新中
           </Badge>
@@ -73,9 +76,9 @@ function Index() {
 
           <div className="mt-16 grid max-w-2xl grid-cols-3 gap-8 text-primary-foreground/90">
             {[
-              { icon: BookOpen, n: "40+", l: "精品课程" },
-              { icon: Users, n: "12k+", l: "学习同伴" },
-              { icon: MessageSquare, n: "8.6k", l: "高质量讨论" },
+              { icon: BookOpen, n: String(courses.length), l: "课程数量" },
+              { icon: MessageSquare, n: String(posts.length), l: "讨论帖子" },
+              { icon: Users, n: String(totalStudents), l: "在学人次" },
             ].map((s) => (
               <div key={s.l}>
                 <s.icon className="h-5 w-5 text-primary-foreground/70" />
@@ -84,6 +87,31 @@ function Index() {
               </div>
             ))}
           </div>
+         </div>
+         {hero && (
+           <Link to="/courses/$courseId" params={{ courseId: hero.id }} className="hidden lg:block">
+             <Card className="border-border/60 bg-card p-6 text-foreground transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-elegant)]">
+               <Badge variant="secondary" className="mb-4">
+                 <Sparkles className="mr-1 h-3 w-3" /> 主打课程
+               </Badge>
+               <div
+                 className="grid h-20 w-20 place-items-center rounded-2xl text-5xl"
+                 style={{ background: "var(--gradient-warm)" }}
+               >
+                 {hero.emoji}
+               </div>
+               <Badge variant="outline" className="mt-5">{hero.category}</Badge>
+               <h3 className="mt-3 text-2xl font-semibold leading-snug">{hero.title}</h3>
+               <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{hero.description}</p>
+               <div className="mt-6 flex items-center justify-between text-sm">
+                 <span className="text-muted-foreground">{hero.instructor} · {hero.level}</span>
+                 <span className="inline-flex items-center gap-1 font-medium text-primary">
+                   立即学习 <ArrowRight className="h-4 w-4" />
+                 </span>
+               </div>
+             </Card>
+           </Link>
+         )}
         </div>
       </section>
 
