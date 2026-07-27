@@ -59,6 +59,7 @@ function EditCourse() {
         <CourseForm
           initial={course}
           lockId
+          persistKey={`edit:${courseId}`}
           submitting={upd.isPending}
           submitLabel="保存修改"
           onSubmit={(v) => upd.mutate(v)}
