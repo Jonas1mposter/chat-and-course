@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -15,14 +15,17 @@ export function CourseForm({
   onSubmit,
   submitLabel,
   lockId,
+  persistKey,
 }: {
   initial?: Partial<CourseFormValue>;
   submitting: boolean;
   onSubmit: (v: CourseFormValue) => void;
   submitLabel: string;
   lockId?: boolean;
+  /** sessionStorage 键；不传则不做持久化 */
+  persistKey?: string;
 }) {
-  const [v, setV] = useState<CourseFormValue>({
+  const defaults: CourseFormValue = {
     id: initial?.id ?? "",
     title: initial?.title ?? "",
     description: initial?.description ?? "",
@@ -38,9 +41,28 @@ export function CourseForm({
     requiresCode: initial?.requiresCode ?? false,
     previewLessons: initial?.previewLessons ?? 1,
     coverUrl: initial?.coverUrl ?? "",
+  };
+  const storageKey = persistKey ? `chaonao.course-draft.${persistKey}` : null;
+  const [v, setV] = useState<CourseFormValue>(() => {
+    if (!storageKey || typeof window === "undefined") return defaults;
+    try {
+      const raw = window.sessionStorage.getItem(storageKey);
+      if (raw) return { ...defaults, ...JSON.parse(raw) };
+    } catch {}
+    return defaults;
   });
+  const dirtyRef = useRef(false);
+  useEffect(() => {
+    if (!storageKey) return;
+    try {
+      window.sessionStorage.setItem(storageKey, JSON.stringify(v));
+    } catch {}
+  }, [v, storageKey]);
   const set = <K extends keyof CourseFormValue>(k: K, val: CourseFormValue[K]) =>
-    setV((p) => ({ ...p, [k]: val }));
+    setV((p) => {
+      dirtyRef.current = true;
+      return { ...p, [k]: val };
+    });
 
   const addLesson = () =>
     set("lessonsList", [...v.lessonsList, { title: "", duration: "" }]);
@@ -56,6 +78,18 @@ export function CourseForm({
 
   const [uploading, setUploading] = useState<Record<number, number>>({});
   const [uploadErr, setUploadErr] = useState<Record<number, string | null>>({});
+
+  // 上传中 or 已改动未提交 → 刷新/关闭时给个警告，避免辛苦填的内容被吞
+  useEffect(() => {
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      const uploadingCount = Object.keys(uploading).length;
+      if (uploadingCount === 0 && !dirtyRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [uploading]);
 
   async function uploadLessonVideo(i: number, file: File) {
     setUploadErr((p) => ({ ...p, [i]: null }));
@@ -81,7 +115,14 @@ export function CourseForm({
   return (
     <form
       className="space-y-6"
-      onSubmit={(e) => { e.preventDefault(); onSubmit({ ...v, lessons: v.lessonsList.length || v.lessons }); }}
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (storageKey) {
+          try { window.sessionStorage.removeItem(storageKey); } catch {}
+        }
+        dirtyRef.current = false;
+        onSubmit({ ...v, lessons: v.lessonsList.length || v.lessons });
+      }}
     >
       <Card className="border-border/60 p-6 space-y-4">
         <div className="grid grid-cols-2 gap-4">
