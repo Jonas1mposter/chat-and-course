@@ -45,12 +45,14 @@ export function CourseForm({
   const addLesson = () =>
     set("lessonsList", [...v.lessonsList, { title: "", duration: "" }]);
   const updLesson = (i: number, patch: Partial<{ title: string; duration: string; videoUrl: string }>) => {
-    const next = v.lessonsList.slice();
-    next[i] = { ...next[i], ...patch };
-    set("lessonsList", next);
+    setV((p) => {
+      const next = p.lessonsList.slice();
+      next[i] = { ...next[i], ...patch };
+      return { ...p, lessonsList: next };
+    });
   };
   const rmLesson = (i: number) =>
-    set("lessonsList", v.lessonsList.filter((_, idx) => idx !== i));
+    setV((p) => ({ ...p, lessonsList: p.lessonsList.filter((_, idx) => idx !== i) }));
 
   const [uploading, setUploading] = useState<Record<number, number>>({});
   const [uploadErr, setUploadErr] = useState<Record<number, string | null>>({});
