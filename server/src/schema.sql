@@ -118,6 +118,20 @@ CREATE TABLE IF NOT EXISTS lesson_progress (
   PRIMARY KEY(user_id, course_id, lesson_idx)
 );
 
+-- ============ 课时评论 / 讲师出题 ============
+CREATE TABLE IF NOT EXISTS lesson_comments (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  course_id   text NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+  lesson_idx  int  NOT NULL,
+  author_id   uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  kind        text NOT NULL DEFAULT 'comment', -- 'comment' | 'question'
+  content     text NOT NULL,
+  parent_id   uuid REFERENCES lesson_comments(id) ON DELETE CASCADE,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS lesson_comments_lesson_idx
+  ON lesson_comments(course_id, lesson_idx, created_at);
+
 -- ============ 积分函数 ============
 -- 发帖+5  评论+2  收到帖子赞+1  上传视频+10  收到视频赞+2  完成一节课+3
 CREATE OR REPLACE FUNCTION user_points(uid uuid) RETURNS int
