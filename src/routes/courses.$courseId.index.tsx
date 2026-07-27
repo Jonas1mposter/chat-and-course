@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock, MessageSquare, HelpCircle, Trash2 } from "lucide-react";
+import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock, MessageSquare, HelpCircle, Trash2, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +49,129 @@ function CourseDetail() {
   }
 
   return <CourseView course={course} canEdit={user?.role === "admin" || user?.role === "teacher"} />;
+}
+
+type QuizPayload = { q: string; opts: string[]; a: number; e?: string };
+
+function parseQuiz(content: string): QuizPayload | null {
+  const s = content.trim();
+  if (!s.startsWith("{")) return null;
+  try {
+    const d = JSON.parse(s);
+    if (
+      d &&
+      typeof d.q === "string" &&
+      Array.isArray(d.opts) &&
+      d.opts.every((o: unknown) => typeof o === "string") &&
+      typeof d.a === "number"
+    ) {
+      return { q: d.q, opts: d.opts, a: d.a, e: typeof d.e === "string" ? d.e : "" };
+    }
+  } catch {}
+  return null;
+}
+
+function QuestionCard({
+  q,
+  canDelete,
+  onDelete,
+}: {
+  q: LessonComment;
+  canDelete: boolean;
+  onDelete: () => void;
+}) {
+  const quiz = parseQuiz(q.content);
+  const [picked, setPicked] = useState<number | null>(null);
+  const letters = ["A", "B", "C", "D", "E", "F"];
+
+  return (
+    <Card className="border-primary/30 bg-primary/5 p-4">
+      <div className="flex items-center gap-2 text-sm">
+        <HelpCircle className="h-4 w-4 text-primary" />
+        <span className="font-medium">{q.authorName}</span>
+        <Badge className="bg-primary text-primary-foreground">讲师提问</Badge>
+        <span className="ml-auto text-xs text-muted-foreground">
+          {new Date(q.createdAt).toLocaleString()}
+        </span>
+        {canDelete && (
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-destructive"
+            onClick={onDelete}
+            aria-label="删除"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
+      {!quiz ? (
+        <p className="mt-2 whitespace-pre-wrap text-sm">{q.content}</p>
+      ) : (
+        <div className="mt-3">
+          <p className="text-sm font-semibold">{quiz.q}</p>
+          <div className="mt-3 space-y-2">
+            {quiz.opts.map((opt, i) => {
+              const isPicked = picked === i;
+              const isAnswer = i === quiz.a;
+              const revealed = picked !== null;
+              const base =
+                "flex w-full items-start gap-3 rounded-lg border p-3 text-left text-sm transition";
+              let cls = "border-border bg-background hover:border-primary";
+              if (revealed) {
+                if (isAnswer) cls = "border-emerald-500/60 bg-emerald-500/10";
+                else if (isPicked) cls = "border-destructive/60 bg-destructive/10";
+                else cls = "border-border bg-background opacity-70";
+              }
+              return (
+                <button
+                  type="button"
+                  key={i}
+                  disabled={revealed}
+                  onClick={() => setPicked(i)}
+                  className={`${base} ${cls}`}
+                >
+                  <span className="font-semibold text-primary">{letters[i]}.</span>
+                  <span className="flex-1">{opt}</span>
+                  {revealed && isAnswer && (
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  )}
+                  {revealed && isPicked && !isAnswer && (
+                    <XCircle className="h-4 w-4 text-destructive" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+          {picked !== null && (
+            <div className="mt-3 space-y-2">
+              <div className="text-sm">
+                {picked === quiz.a ? (
+                  <span className="font-semibold text-emerald-600">✅ 答对了</span>
+                ) : (
+                  <span className="font-semibold text-destructive">
+                    ❌ 答错了，正确答案是 {letters[quiz.a]}
+                  </span>
+                )}
+              </div>
+              {quiz.e && (
+                <div className="rounded-md border-l-2 border-amber-500/60 bg-amber-500/5 p-3 text-sm text-muted-foreground">
+                  💡 {quiz.e}
+                </div>
+              )}
+              <button
+                type="button"
+                className="text-xs text-muted-foreground hover:text-primary"
+                onClick={() => setPicked(null)}
+              >
+                重新作答
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </Card>
+  );
 }
 
 function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
