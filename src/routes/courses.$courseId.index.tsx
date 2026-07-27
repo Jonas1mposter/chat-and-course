@@ -366,7 +366,7 @@ function LessonComments({
                   {new Date(q.createdAt).toLocaleString()}
                 </span>
                 {user &&
-                  (user.id === q.authorId ||
+                  (user.sub === q.authorId ||
                     user.role === "admin" ||
                     canTeach) && (
                     <button
@@ -464,7 +464,7 @@ function LessonComments({
                   {new Date(c.createdAt).toLocaleString()}
                 </span>
                 {user &&
-                  (user.id === c.authorId ||
+                  (user.sub === c.authorId ||
                     user.role === "admin" ||
                     canTeach) && (
                     <button
