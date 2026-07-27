@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock } from "lucide-react";
+import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock, MessageSquare, HelpCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Course } from "@/lib/mock-data";
@@ -148,6 +149,11 @@ function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
                 <h3 className="text-lg font-semibold">{activeLesson.title}</h3>
                 <span className="text-sm text-muted-foreground">{activeLesson.duration}</span>
               </div>
+              <LessonComments
+                courseId={course.id}
+                lessonIdx={activeIdx}
+                canTeach={canEdit}
+              />
             </div>
           )}
 
