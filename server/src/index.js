@@ -11,6 +11,7 @@ import posts from "./routes/posts.js";
 import videos from "./routes/videos.js";
 import users from "./routes/users.js";
 import admin from "./routes/admin.js";
+import lessonComments from "./routes/lesson-comments.js";
 import { ensureUploadsDir, UPLOADS_DIR } from "./uploads.js";
 
 const app = express();
@@ -30,6 +31,7 @@ app.use("/uploads", express.static(UPLOADS_DIR, { maxAge: "1d" }));
 app.get("/api/health", (_req, res) => res.json({ ok: true, ts: Date.now() }));
 app.use("/api/auth", auth);
 app.use("/api/courses", courses);
+app.use("/api/courses/:id/lessons/:idx/comments", lessonComments);
 app.use("/api/posts", posts);
 app.use("/api/videos", videos);
 app.use("/api/users", users);

@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock } from "lucide-react";
+import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock, MessageSquare, HelpCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Course } from "@/lib/mock-data";
@@ -148,6 +149,11 @@ function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
                 <h3 className="text-lg font-semibold">{activeLesson.title}</h3>
                 <span className="text-sm text-muted-foreground">{activeLesson.duration}</span>
               </div>
+              <LessonComments
+                courseId={course.id}
+                lessonIdx={activeIdx}
+                canTeach={canEdit}
+              />
             </div>
           )}
 
@@ -269,5 +275,213 @@ function Row({
       </span>
       <span className="font-medium">{value}</span>
     </div>
+  );
+}
+
+type LessonComment = {
+  id: string;
+  courseId: string;
+  lessonIdx: number;
+  authorId: string;
+  authorName: string;
+  authorRole: "student" | "teacher" | "admin";
+  kind: "comment" | "question";
+  content: string;
+  parentId: string | null;
+  createdAt: string;
+};
+
+function LessonComments({
+  courseId,
+  lessonIdx,
+  canTeach,
+}: {
+  courseId: string;
+  lessonIdx: number;
+  canTeach: boolean;
+}) {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const key = ["lesson-comments", courseId, lessonIdx];
+  const { data: items = [], isLoading } = useQuery<LessonComment[]>({
+    queryKey: key,
+    queryFn: () =>
+      api<LessonComment[]>(`/api/courses/${courseId}/lessons/${lessonIdx}/comments`),
+  });
+
+  const [text, setText] = useState("");
+  const [mode, setMode] = useState<"comment" | "question">("comment");
+
+  const post = useMutation({
+    mutationFn: (payload: { content: string; kind: "comment" | "question" }) =>
+      api(`/api/courses/${courseId}/lessons/${lessonIdx}/comments`, {
+        method: "POST",
+        body: payload,
+      }),
+    onSuccess: () => {
+      setText("");
+      qc.invalidateQueries({ queryKey: key });
+    },
+  });
+
+  const del = useMutation({
+    mutationFn: (id: string) =>
+      api(`/api/courses/${courseId}/lessons/${lessonIdx}/comments/${id}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: key }),
+  });
+
+  const questions = items.filter((c) => c.kind === "question");
+  const comments = items.filter((c) => c.kind === "comment");
+
+  const submit = () => {
+    const v = text.trim();
+    if (!v) return;
+    post.mutate({ content: v, kind: mode });
+  };
+
+  return (
+    <section className="mt-10">
+      <div className="flex items-center gap-2">
+        <MessageSquare className="h-5 w-5 text-primary" />
+        <h2 className="text-xl font-semibold">课时讨论</h2>
+        <span className="text-sm text-muted-foreground">
+          {items.length} 条
+        </span>
+      </div>
+
+      {questions.length > 0 && (
+        <div className="mt-4 space-y-3">
+          {questions.map((q) => (
+            <Card
+              key={q.id}
+              className="border-primary/30 bg-primary/5 p-4"
+            >
+              <div className="flex items-center gap-2 text-sm">
+                <HelpCircle className="h-4 w-4 text-primary" />
+                <span className="font-medium">{q.authorName}</span>
+                <Badge className="bg-primary text-primary-foreground">讲师提问</Badge>
+                <span className="ml-auto text-xs text-muted-foreground">
+                  {new Date(q.createdAt).toLocaleString()}
+                </span>
+                {user &&
+                  (user.sub === q.authorId ||
+                    user.role === "admin" ||
+                    canTeach) && (
+                    <button
+                      type="button"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => del.mutate(q.id)}
+                      aria-label="删除"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+              </div>
+              <p className="mt-2 whitespace-pre-wrap text-sm">{q.content}</p>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {user ? (
+        <Card className="mt-4 border-border/60 p-4">
+          {canTeach && (
+            <div className="mb-2 flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                variant={mode === "comment" ? "default" : "outline"}
+                onClick={() => setMode("comment")}
+              >
+                评论
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant={mode === "question" ? "default" : "outline"}
+                onClick={() => setMode("question")}
+              >
+                <HelpCircle className="mr-1 h-4 w-4" /> 出题
+              </Button>
+            </div>
+          )}
+          <Textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder={
+              mode === "question"
+                ? "写下这节课要抛给同学们的问题…"
+                : "说点什么，或回答讲师的问题…"
+            }
+            rows={3}
+          />
+          <div className="mt-2 flex items-center justify-between">
+            {post.error ? (
+              <span className="text-sm text-destructive">
+                {(post.error as Error).message}
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                {mode === "question" ? "将以「讲师提问」的形式发布" : "支持普通文本"}
+              </span>
+            )}
+            <Button
+              size="sm"
+              onClick={submit}
+              disabled={!text.trim() || post.isPending}
+            >
+              {post.isPending ? "发送中…" : mode === "question" ? "发布问题" : "发送"}
+            </Button>
+          </div>
+        </Card>
+      ) : (
+        <Card className="mt-4 border-dashed p-4 text-sm text-muted-foreground">
+          <Link to="/auth" search={{ mode: "login" }} className="text-primary hover:underline">
+            登录
+          </Link>{" "}
+          后可参与讨论
+        </Card>
+      )}
+
+      <div className="mt-6 space-y-3">
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">加载评论…</p>
+        ) : comments.length === 0 ? (
+          <p className="text-sm text-muted-foreground">还没有评论，抢个沙发～</p>
+        ) : (
+          comments.map((c) => (
+            <Card key={c.id} className="border-border/60 p-4">
+              <div className="flex items-center gap-2 text-sm">
+                <span className="font-medium">{c.authorName}</span>
+                {c.authorRole !== "student" && (
+                  <Badge variant="outline" className="text-[10px]">
+                    {c.authorRole === "admin" ? "管理员" : "讲师"}
+                  </Badge>
+                )}
+                <span className="ml-auto text-xs text-muted-foreground">
+                  {new Date(c.createdAt).toLocaleString()}
+                </span>
+                {user &&
+                  (user.sub === c.authorId ||
+                    user.role === "admin" ||
+                    canTeach) && (
+                    <button
+                      type="button"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => del.mutate(c.id)}
+                      aria-label="删除"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+              </div>
+              <p className="mt-2 whitespace-pre-wrap text-sm">{c.content}</p>
+            </Card>
+          ))
+        )}
+      </div>
+    </section>
   );
 }
