@@ -126,7 +126,14 @@ function RootComponent() {
           <footer className="border-t border-border/60 mt-24">
             <div className="mx-auto max-w-6xl px-6 py-8 text-sm text-muted-foreground flex flex-wrap items-center justify-between gap-3">
               <span>© 超脑 Studio · 让学习成为一件愉快的事</span>
-              <span>用 ❤️ 打造</span>
+              <a
+                href="https://beian.miit.gov.cn/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-foreground transition-colors"
+              >
+                沪ICP备2025139369号
+              </a>
             </div>
           </footer>
         </div>
