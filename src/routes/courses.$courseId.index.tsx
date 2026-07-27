@@ -373,33 +373,17 @@ function LessonComments({
       {questions.length > 0 && (
         <div className="mt-4 space-y-3">
           {questions.map((q) => (
-            <Card
+            <QuestionCard
               key={q.id}
-              className="border-primary/30 bg-primary/5 p-4"
-            >
-              <div className="flex items-center gap-2 text-sm">
-                <HelpCircle className="h-4 w-4 text-primary" />
-                <span className="font-medium">{q.authorName}</span>
-                <Badge className="bg-primary text-primary-foreground">讲师提问</Badge>
-                <span className="ml-auto text-xs text-muted-foreground">
-                  {new Date(q.createdAt).toLocaleString()}
-                </span>
-                {user &&
-                  (user.sub === q.authorId ||
-                    user.role === "admin" ||
-                    canTeach) && (
-                    <button
-                      type="button"
-                      className="text-muted-foreground hover:text-destructive"
-                      onClick={() => del.mutate(q.id)}
-                      aria-label="删除"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  )}
-              </div>
-              <p className="mt-2 whitespace-pre-wrap text-sm">{q.content}</p>
-            </Card>
+              q={q}
+              canDelete={
+                !!user &&
+                (user.sub === q.authorId ||
+                  user.role === "admin" ||
+                  canTeach)
+              }
+              onDelete={() => del.mutate(q.id)}
+            />
           ))}
         </div>
       )}
