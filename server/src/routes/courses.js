@@ -22,6 +22,16 @@ const CourseIn = z.object({
         title: z.string(),
         duration: z.string(),
         videoUrl: z.string().optional(),
+        attachments: z
+          .array(
+            z.object({
+              name: z.string(),
+              url: z.string(),
+              sizeBytes: z.number().optional(),
+            }),
+          )
+          .optional()
+          .default([]),
       }),
     )
     .default([]),
