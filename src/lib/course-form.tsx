@@ -66,7 +66,15 @@ export function CourseForm({
 
   const addLesson = () =>
     set("lessonsList", [...v.lessonsList, { title: "", duration: "" }]);
-  const updLesson = (i: number, patch: Partial<{ title: string; duration: string; videoUrl: string }>) => {
+  const updLesson = (
+    i: number,
+    patch: Partial<{
+      title: string;
+      duration: string;
+      videoUrl: string;
+      attachments: { name: string; url: string; sizeBytes?: number }[];
+    }>,
+  ) => {
     setV((p) => {
       const next = p.lessonsList.slice();
       next[i] = { ...next[i], ...patch };
@@ -78,18 +86,21 @@ export function CourseForm({
 
   const [uploading, setUploading] = useState<Record<number, number>>({});
   const [uploadErr, setUploadErr] = useState<Record<number, string | null>>({});
+  const [fileUploading, setFileUploading] = useState<Record<number, number>>({});
+  const [fileUploadErr, setFileUploadErr] = useState<Record<number, string | null>>({});
 
   // 上传中 or 已改动未提交 → 刷新/关闭时给个警告，避免辛苦填的内容被吞
   useEffect(() => {
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
-      const uploadingCount = Object.keys(uploading).length;
+      const uploadingCount =
+        Object.keys(uploading).length + Object.keys(fileUploading).length;
       if (uploadingCount === 0 && !dirtyRef.current) return;
       e.preventDefault();
       e.returnValue = "";
     };
     window.addEventListener("beforeunload", onBeforeUnload);
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
-  }, [uploading]);
+  }, [uploading, fileUploading]);
 
   async function uploadLessonVideo(i: number, file: File) {
     setUploadErr((p) => ({ ...p, [i]: null }));
@@ -138,6 +149,75 @@ export function CourseForm({
       });
     }
   }
+
+  async function uploadLessonAttachment(i: number, file: File) {
+    setFileUploadErr((p) => ({ ...p, [i]: null }));
+    setFileUploading((p) => ({ ...p, [i]: 0 }));
+    try {
+      let publicUrl = "";
+      let sizeBytes = file.size;
+      // 优先尝试 COS 直传；后端未启用 COS 时降级到本地上传
+      try {
+        const signed = await api<{ uploadUrl: string; publicUrl: string }>(
+          "/api/videos/sign-upload-file",
+          {
+            method: "POST",
+            body: {
+              filename: file.name,
+              contentType: file.type || "application/octet-stream",
+            },
+          },
+        );
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("PUT", signed.uploadUrl);
+          xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              setFileUploading((prev) => ({
+                ...prev,
+                [i]: Math.round((e.loaded / e.total) * 100),
+              }));
+            }
+          };
+          xhr.onload = () =>
+            xhr.status >= 200 && xhr.status < 300
+              ? resolve()
+              : reject(new Error(`COS 上传失败 ${xhr.status}`));
+          xhr.onerror = () => reject(new Error("网络错误，上传失败"));
+          xhr.onabort = () => reject(new Error("上传已取消"));
+          xhr.send(file);
+        });
+        publicUrl = signed.publicUrl;
+      } catch (cosErr) {
+        // 走本地上传
+        const res = await uploadFile<{ publicUrl: string; sizeBytes: number }>(
+          "/api/videos/upload-file",
+          file,
+          (percent) => setFileUploading((prev) => ({ ...prev, [i]: percent })),
+        );
+        publicUrl = res.publicUrl;
+        sizeBytes = res.sizeBytes ?? file.size;
+      }
+      const prev = v.lessonsList[i]?.attachments ?? [];
+      updLesson(i, {
+        attachments: [...prev, { name: file.name, url: publicUrl, sizeBytes }],
+      });
+    } catch (e) {
+      setFileUploadErr((p) => ({ ...p, [i]: (e as Error).message }));
+    } finally {
+      setFileUploading((p) => {
+        const n = { ...p };
+        delete n[i];
+        return n;
+      });
+    }
+  }
+
+  const removeAttachment = (i: number, idx: number) => {
+    const prev = v.lessonsList[i]?.attachments ?? [];
+    updLesson(i, { attachments: prev.filter((_, k) => k !== idx) });
+  };
 
   return (
     <form
@@ -244,6 +324,68 @@ export function CourseForm({
                 </div>
               )}
               {uploadErr[i] && <p className="text-xs text-destructive">{uploadErr[i]}</p>}
+
+              <div className="space-y-2 rounded-md bg-secondary/40 p-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted-foreground">
+                    附件（PDF / Word / PPT / Markdown 等）
+                  </span>
+                  <Input
+                    type="file"
+                    accept=".pdf,.md,.markdown,.txt,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.zip,.rar,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/markdown,text/plain,application/zip"
+                    className="w-auto"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) uploadLessonAttachment(i, f);
+                      e.currentTarget.value = "";
+                    }}
+                  />
+                </div>
+                {(l.attachments ?? []).length > 0 && (
+                  <ul className="space-y-1">
+                    {(l.attachments ?? []).map((a, idx) => (
+                      <li
+                        key={`${a.url}-${idx}`}
+                        className="flex items-center justify-between gap-2 rounded bg-background px-2 py-1 text-xs"
+                      >
+                        <a
+                          href={a.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="truncate text-primary hover:underline"
+                        >
+                          {a.name}
+                        </a>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 px-2"
+                          onClick={() => removeAttachment(i, idx)}
+                        >
+                          删
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {fileUploading[i] !== undefined && (
+                  <div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full bg-primary transition-all"
+                        style={{ width: `${fileUploading[i]}%` }}
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      附件上传中 {fileUploading[i]}%
+                    </p>
+                  </div>
+                )}
+                {fileUploadErr[i] && (
+                  <p className="text-xs text-destructive">{fileUploadErr[i]}</p>
+                )}
+              </div>
             </div>
           ))}
         </div>

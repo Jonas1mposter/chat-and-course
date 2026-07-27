@@ -63,6 +63,28 @@ r.post("/upload-cover", requireAuth, uploaderFor("covers").single("file"), async
   res.json({ key, publicUrl: localPublicUrlFor(key, req) });
 });
 
+// 3a) 获取 COS 附件上传预签名（pdf/doc/ppt/md 等任意文件）
+r.post("/sign-upload-file", requireAuth, async (req, res) => {
+  if (!cosIsConfigured()) return res.status(400).json({ error: "当前未启用 COS，请使用 /upload-file" });
+  const p = SignIn.safeParse(req.body);
+  if (!p.success) return res.status(400).json({ error: p.error.message });
+  const safe = p.data.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const key = `files/${req.user.sub}/${Date.now()}-${randomUUID().slice(0, 8)}-${safe}`;
+  try {
+    const url = await presignPutUrl(key, 600);
+    res.json({ uploadUrl: url, key, publicUrl: cosPublicUrlFor(key) });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// 3b) 本地服务器接收附件
+r.post("/upload-file", requireAuth, uploaderFor("files").single("file"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "没有收到文件" });
+  const key = `files/${req.file.filename}`;
+  res.json({ key, publicUrl: localPublicUrlFor(key, req), sizeBytes: req.file.size });
+});
+
 const CreateIn = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(2000).optional().default(""),

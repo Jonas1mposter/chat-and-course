@@ -9,7 +9,12 @@ export type Course = {
   students: number;
   category: string;
   emoji: string;
-  lessonsList: { title: string; duration: string; videoUrl?: string }[];
+  lessonsList: {
+    title: string;
+    duration: string;
+    videoUrl?: string;
+    attachments?: { name: string; url: string; sizeBytes?: number }[];
+  }[];
   published?: boolean;
   requiresCode?: boolean;
   previewLessons?: number;

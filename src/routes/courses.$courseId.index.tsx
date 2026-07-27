@@ -149,6 +149,25 @@ function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
                 <h3 className="text-lg font-semibold">{activeLesson.title}</h3>
                 <span className="text-sm text-muted-foreground">{activeLesson.duration}</span>
               </div>
+              {(activeLesson.attachments ?? []).length > 0 && (
+                <div className="mt-3 rounded-md border border-border/60 bg-secondary/30 p-3">
+                  <div className="mb-2 text-sm font-medium">课程附件</div>
+                  <ul className="space-y-1 text-sm">
+                    {(activeLesson.attachments ?? []).map((a, idx) => (
+                      <li key={`${a.url}-${idx}`}>
+                        <a
+                          href={a.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          📎 {a.name}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <LessonComments
                 courseId={course.id}
                 lessonIdx={activeIdx}
