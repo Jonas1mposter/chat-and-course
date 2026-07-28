@@ -150,3 +150,30 @@ LANGUAGE sql STABLE AS $$
     SELECT 3  * COUNT(*) FROM lesson_progress WHERE user_id = uid
   ),0);
 $$;
+-- ============ 密码重置 ============
+CREATE TABLE IF NOT EXISTS password_reset_codes (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email      text NOT NULL,
+  code_hash  text NOT NULL,
+  expires_at timestamptz NOT NULL,
+  used_at    timestamptz,
+  attempts   int NOT NULL DEFAULT 0,
+  ip         text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS prc_email_idx ON password_reset_codes(email, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS password_reset_logs (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id    uuid REFERENCES users(id) ON DELETE SET NULL,
+  email      text NOT NULL,
+  method     text NOT NULL,            -- 'request' | 'self_code' | 'admin'
+  actor_id   uuid REFERENCES users(id) ON DELETE SET NULL,
+  actor_email text,
+  success    boolean NOT NULL DEFAULT true,
+  detail     text,
+  ip         text,
+  user_agent text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS prl_created_idx ON password_reset_logs(created_at DESC);

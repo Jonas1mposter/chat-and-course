@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VideosIndexRouteImport } from './routes/videos.index'
@@ -23,12 +24,18 @@ import { Route as DiscussionsPostIdRouteImport } from './routes/discussions.$pos
 import { Route as CoursesNewRouteImport } from './routes/courses.new'
 import { Route as CoursesCourseIdRouteImport } from './routes/courses.$courseId'
 import { Route as AdminSetupRouteImport } from './routes/admin.setup'
+import { Route as AdminPasswordsRouteImport } from './routes/admin.passwords'
 import { Route as CoursesCourseIdIndexRouteImport } from './routes/courses.$courseId.index'
 import { Route as CoursesCourseIdEditRouteImport } from './routes/courses.$courseId.edit'
 
 const LeaderboardRoute = LeaderboardRouteImport.update({
   id: '/leaderboard',
   path: '/leaderboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -96,6 +103,11 @@ const AdminSetupRoute = AdminSetupRouteImport.update({
   path: '/admin/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminPasswordsRoute = AdminPasswordsRouteImport.update({
+  id: '/admin/passwords',
+  path: '/admin/passwords',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoursesCourseIdIndexRoute = CoursesCourseIdIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -110,7 +122,9 @@ const CoursesCourseIdEditRoute = CoursesCourseIdEditRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/admin/passwords': typeof AdminPasswordsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
@@ -128,7 +142,9 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/admin/passwords': typeof AdminPasswordsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
@@ -146,7 +162,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/admin/passwords': typeof AdminPasswordsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
@@ -166,7 +184,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/forgot-password'
     | '/leaderboard'
+    | '/admin/passwords'
     | '/admin/setup'
     | '/courses/$courseId'
     | '/courses/new'
@@ -184,7 +204,9 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/forgot-password'
     | '/leaderboard'
+    | '/admin/passwords'
     | '/admin/setup'
     | '/courses/new'
     | '/discussions/$postId'
@@ -201,7 +223,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/auth'
+    | '/forgot-password'
     | '/leaderboard'
+    | '/admin/passwords'
     | '/admin/setup'
     | '/courses/$courseId'
     | '/courses/new'
@@ -220,7 +244,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   LeaderboardRoute: typeof LeaderboardRoute
+  AdminPasswordsRoute: typeof AdminPasswordsRoute
   AdminSetupRoute: typeof AdminSetupRoute
   CoursesCourseIdRoute: typeof CoursesCourseIdRouteWithChildren
   CoursesNewRoute: typeof CoursesNewRoute
@@ -241,6 +267,13 @@ declare module '@tanstack/react-router' {
       path: '/leaderboard'
       fullPath: '/leaderboard'
       preLoaderRoute: typeof LeaderboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -334,6 +367,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/passwords': {
+      id: '/admin/passwords'
+      path: '/admin/passwords'
+      fullPath: '/admin/passwords'
+      preLoaderRoute: typeof AdminPasswordsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/courses/$courseId/': {
       id: '/courses/$courseId/'
       path: '/'
@@ -368,7 +408,9 @@ const CoursesCourseIdRouteWithChildren = CoursesCourseIdRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   LeaderboardRoute: LeaderboardRoute,
+  AdminPasswordsRoute: AdminPasswordsRoute,
   AdminSetupRoute: AdminSetupRoute,
   CoursesCourseIdRoute: CoursesCourseIdRouteWithChildren,
   CoursesNewRoute: CoursesNewRoute,

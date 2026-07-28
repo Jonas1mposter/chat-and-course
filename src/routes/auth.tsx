@@ -110,6 +110,13 @@ function AuthPage() {
           <Button type="submit" className="w-full" disabled={busy}>
             {busy ? "提交中…" : mode === "login" ? "登录" : "注册并登录"}
           </Button>
+          {mode === "login" && (
+            <p className="text-center text-xs text-muted-foreground">
+              <Link to="/forgot-password" className="hover:text-foreground hover:underline">
+                忘记密码？
+              </Link>
+            </p>
+          )}
         </form>
       </Card>
     </main>
