@@ -1,8 +1,10 @@
 import { Router } from "express";
 import { randomBytes } from "crypto";
+import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { q } from "../db.js";
 import { requireRole } from "../auth.js";
+import { logReset } from "./auth.js";
 
 const r = Router();
 
