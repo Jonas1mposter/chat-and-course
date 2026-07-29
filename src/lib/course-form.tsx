@@ -35,7 +35,7 @@ export function CourseForm({
     lessons: initial?.lessons ?? 0,
     students: initial?.students ?? 0,
     category: initial?.category ?? "",
-    emoji: initial?.emoji ?? "📘",
+    emoji: initial?.emoji ?? "",
     lessonsList: initial?.lessonsList ?? [],
     published: initial?.published ?? false,
     requiresCode: initial?.requiresCode ?? false,
