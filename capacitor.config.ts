@@ -3,7 +3,7 @@ import { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "studio.superbrain.app",
   appName: "超脑 Studio",
-  webDir: "dist",
+  webDir: "mobile-dist",
   server: {
     url: "https://superbrain-studio.cn/",
     cleartext: false,
