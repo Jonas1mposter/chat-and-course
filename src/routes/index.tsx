@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
 import type { Course, Post } from "@/lib/mock-data";
+import { CourseEmoji } from "@/components/course-emoji";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -98,7 +99,7 @@ function Index() {
                  className="grid h-20 w-20 place-items-center rounded-2xl text-5xl"
                  style={{ background: "var(--gradient-warm)" }}
                >
-                 {hero.emoji}
+                 <CourseEmoji emoji={hero.emoji} label={hero.title} />
                </div>
                <Badge variant="outline" className="mt-5">{hero.category}</Badge>
                <h3 className="mt-3 text-2xl font-semibold leading-snug">{hero.title}</h3>
@@ -142,7 +143,7 @@ function Index() {
                   className="grid h-14 w-14 place-items-center rounded-xl text-3xl"
                   style={{ background: "var(--gradient-warm)" }}
                 >
-                  {c.emoji}
+                  <CourseEmoji emoji={c.emoji} label={c.title} />
                 </div>
                 <Badge variant="secondary" className="mt-4">
                   {c.category}

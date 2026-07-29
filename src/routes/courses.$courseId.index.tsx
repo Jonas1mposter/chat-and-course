@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Course } from "@/lib/mock-data";
+import { CourseEmoji } from "@/components/course-emoji";
 
 export const Route = createFileRoute("/courses/$courseId/")({
   head: () => ({ meta: [{ title: "课程详情 — 超脑 Studio" }] }),
@@ -226,7 +227,7 @@ function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
               className="grid h-16 w-16 place-items-center rounded-2xl text-4xl"
               style={{ background: "var(--gradient-warm)" }}
             >
-              {course.emoji}
+              <CourseEmoji emoji={course.emoji} label={course.title} />
             </div>
             <div>
               <div className="flex gap-2">

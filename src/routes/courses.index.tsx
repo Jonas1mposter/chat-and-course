@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Course } from "@/lib/mock-data";
+import { CourseEmoji } from "@/components/course-emoji";
 
 export const Route = createFileRoute("/courses/")({
   head: () => ({
@@ -97,7 +98,7 @@ function CoursesPage() {
                 className="grid h-14 w-14 place-items-center rounded-xl text-3xl"
                 style={{ background: "var(--gradient-warm)" }}
               >
-                {c.emoji}
+                <CourseEmoji emoji={c.emoji} label={c.title} />
               </div>
               <div className="mt-4 flex items-center gap-2">
                 <Badge variant="secondary">{c.category}</Badge>
