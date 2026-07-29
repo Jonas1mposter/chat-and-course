@@ -10,7 +10,11 @@
     "start": "node dist/server/index.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "mobile:build": "vite build && cap sync",
+    "mobile:ios": "cap run ios",
+    "mobile:ios:open": "cap open ios",
+    "mobile:icons": "python3 scripts/generate-ios-icons.py"
   },
   "dependencies": {
     "@capacitor/core": "^8.4.2",
