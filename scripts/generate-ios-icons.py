@@ -21,8 +21,7 @@ def ensure_square(src: Image.Image, bg: str) -> Image.Image:
         return src.convert("RGBA")
     size = max(w, h)
     out = Image.new("RGBA", (size, size), bg)
-    out.paste(src.convert("RGBA"), ((size - w) // 2, (size - h) // 2), src.convert("RGBA")
-    )
+    out.paste(src.convert("RGBA"), ((size - w) // 2, (size - h) // 2), src.convert("RGBA"))
     return out
 
 
