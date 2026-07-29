@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "mobile:build": "vite build && cap sync",
+    "mobile:build": "cap sync",
+    "mobile:build:web": "vite build && cap sync",
     "mobile:ios": "cap run ios",
     "mobile:ios:open": "cap open ios",
     "mobile:icons": "python3 scripts/generate-ios-icons.py"
