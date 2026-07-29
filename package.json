@@ -10,9 +10,14 @@
     "start": "node dist/server/index.mjs",
     "preview": "vite preview",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "mobile:build": "vite build && cap sync",
+    "mobile:ios": "cap run ios",
+    "mobile:ios:open": "cap open ios",
+    "mobile:icons": "python3 scripts/generate-ios-icons.py"
   },
   "dependencies": {
+    "@capacitor/core": "^8.4.2",
     "@cloudflare/vite-plugin": "^1.25.5",
     "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-accordion": "^1.2.12",
@@ -70,6 +75,8 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.4.2",
+    "@capacitor/ios": "^8.4.2",
     "@eslint/js": "^9.32.0",
     "@lovable.dev/vite-tanstack-config": "2.7.7",
     "@types/node": "^22.16.5",
