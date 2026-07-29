@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock, MessageSquare, HelpCircle, Trash2, CheckCircle2, XCircle } from "lucide-react";
+import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock, MessageSquare, HelpCircle, Trash2, CheckCircle2, XCircle, Lightbulb, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -148,16 +148,19 @@ function QuestionCard({
             <div className="mt-3 space-y-2">
               <div className="text-sm">
                 {picked === quiz.a ? (
-                  <span className="font-semibold text-emerald-600">✅ 答对了</span>
+                  <span className="inline-flex items-center gap-1 font-semibold text-emerald-600">
+                    <CheckCircle2 className="h-4 w-4" /> 答对了
+                  </span>
                 ) : (
-                  <span className="font-semibold text-destructive">
-                    ❌ 答错了，正确答案是 {letters[quiz.a]}
+                  <span className="inline-flex items-center gap-1 font-semibold text-destructive">
+                    <XCircle className="h-4 w-4" /> 答错了，正确答案是 {letters[quiz.a]}
                   </span>
                 )}
               </div>
               {quiz.e && (
-                <div className="rounded-md border-l-2 border-amber-500/60 bg-amber-500/5 p-3 text-sm text-muted-foreground">
-                  💡 {quiz.e}
+                <div className="flex gap-2 rounded-md border-l-2 border-amber-500/60 bg-amber-500/5 p-3 text-sm text-muted-foreground">
+                  <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                  <span>{quiz.e}</span>
                 </div>
               )}
               <button
@@ -285,7 +288,7 @@ function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
                           rel="noreferrer"
                           className="text-primary hover:underline"
                         >
-                          📎 {a.name}
+                          <Paperclip className="mr-1 inline h-4 w-4" /> {a.name}
                         </a>
                       </li>
                     ))}
