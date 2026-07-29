@@ -11,10 +11,13 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "mobile:build": "cap sync",
-    "mobile:build:web": "vite build && cap sync",
-    "mobile:ios": "cap run ios",
-    "mobile:ios:open": "cap open ios",
+    "mobile:build": "bunx cap sync",
+    "mobile:build:npm": "npx cap sync",
+    "mobile:build:web": "vite build && bunx cap sync",
+    "mobile:ios": "bunx cap run ios",
+    "mobile:ios:npm": "npx cap run ios",
+    "mobile:ios:open": "bunx cap open ios",
+    "mobile:ios:open:npm": "npx cap open ios",
     "mobile:icons": "python3 scripts/generate-ios-icons.py"
   },
   "dependencies": {
