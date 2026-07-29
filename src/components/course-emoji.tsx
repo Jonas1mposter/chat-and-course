@@ -11,9 +11,15 @@ import { cn } from "@/lib/utils";
 const TOFU = "\uFFFF";
 const cache = new Map<string, boolean>();
 
+function isInvalidGlyph(glyph: string): boolean {
+  const normalized = glyph.trim();
+  return !normalized || normalized === "?" || normalized === "？" || normalized === "�";
+}
+
 function canRender(glyph: string): boolean {
-  if (!glyph) return false;
-  if (cache.has(glyph)) return cache.get(glyph)!;
+  if (isInvalidGlyph(glyph)) return false;
+  const cached = cache.get(glyph);
+  if (cached !== undefined) return cached;
   if (typeof document === "undefined") return true; // SSR：先乐观渲染
 
   let ok = true;
@@ -68,7 +74,7 @@ export function CourseEmoji({
     setSupported(canRender(glyph));
   }, [glyph]);
 
-  const showFallback = !glyph || !supported;
+  const showFallback = isInvalidGlyph(glyph) || !supported;
 
   return (
     <span
