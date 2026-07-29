@@ -144,5 +144,23 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    /* 系统字体优先，逐级回退到 iOS/Android/Windows 的中文字体，
+       任一字体缺失都不会出现 "?" 方块 */
+    font-family:
+      -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB",
+      "Microsoft YaHei", "Noto Sans SC", "Helvetica Neue", Helvetica, Arial,
+      sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji";
+  }
+
+  /* Emoji 专用栈：先用彩色 emoji 字体，再回退到普通文字字体 */
+  .emoji-glyph {
+    font-family:
+      "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla",
+      -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+
+  /* Lucide 图标是内联 SVG；若 JS/资源加载失败留下空节点时不撑破布局 */
+  svg:not([viewBox]) {
+    display: none;
   }
 }
