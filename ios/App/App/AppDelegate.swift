@@ -16,12 +16,13 @@ class SuperbrainBridgeViewController: CAPBridgeViewController {
     }
 
     private static func chineseFontInjectionScript() -> String {
-        // 只注入字体栈，不再内联 base64 字体（1MB+ 的 data URL 会让 WebContent 进程崩溃）
+        // 不再用 !important 强制覆盖字体：如果设备/模拟器缺少列表里的字体，
+        // 强制覆盖会让 WebKit 无法回退到任何可用字体，整页变成 "?" 方块。
+        // 这里只提供一个温和的默认值，最终交给 WebKit 自己回退。
         let css = """
-        html, body, body *, input, textarea, select, button {
-          font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Heiti SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif !important;
+        html, body {
+          font-family: system-ui, -apple-system, 'PingFang SC', 'Heiti SC', sans-serif;
           -webkit-font-smoothing: antialiased;
-          text-rendering: optimizeLegibility;
         }
         html { -webkit-text-size-adjust: 100%; }
         """
