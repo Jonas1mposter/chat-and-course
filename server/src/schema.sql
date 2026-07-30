@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS courses (
   lessons      int  NOT NULL DEFAULT 0,
   students     int  NOT NULL DEFAULT 0,
   category     text NOT NULL DEFAULT '',
-  emoji        text NOT NULL DEFAULT '📘',
+  emoji        text NOT NULL DEFAULT '',
   lessons_list jsonb NOT NULL DEFAULT '[]'::jsonb,
   published    boolean NOT NULL DEFAULT false,
   owner_id     uuid REFERENCES users(id) ON DELETE SET NULL,

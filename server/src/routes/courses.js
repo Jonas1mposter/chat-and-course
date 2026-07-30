@@ -15,7 +15,7 @@ const CourseIn = z.object({
   lessons: z.number().int().nonnegative().default(0),
   students: z.number().int().nonnegative().default(0),
   category: z.string().default(""),
-  emoji: z.string().default("📘"),
+  emoji: z.string().default(""),
   lessonsList: z
     .array(
       z.object({

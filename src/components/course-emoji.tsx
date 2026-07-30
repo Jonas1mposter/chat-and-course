@@ -49,6 +49,14 @@ function canRender(glyph: string): boolean {
   return ok;
 }
 
+function shouldUseGlyphs() {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent;
+  const isiOS = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && "ontouchend" in document);
+  if (isiOS) return false;
+  return true;
+}
+
 function initialOf(label?: string) {
   const t = (label ?? "").trim();
   return t ? t.slice(0, 1) : "课";
@@ -68,10 +76,10 @@ export function CourseEmoji({
   className?: string;
 }) {
   const glyph = (emoji ?? "").trim();
-  const [supported, setSupported] = React.useState(true);
+  const [supported, setSupported] = React.useState(false);
 
   React.useEffect(() => {
-    setSupported(canRender(glyph));
+    setSupported(shouldUseGlyphs() && canRender(glyph));
   }, [glyph]);
 
   const showFallback = isInvalidGlyph(glyph) || !supported;
