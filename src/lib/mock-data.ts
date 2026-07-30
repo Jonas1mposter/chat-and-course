@@ -58,7 +58,7 @@ export const courses: Course[] = [
     lessons: 24,
     students: 1280,
     category: "前端开发",
-    emoji: "⚛️",
+    emoji: "",
     lessonsList: [
       { title: "课程导览与环境搭建", duration: "12:30" },
       { title: "JSX 与组件思维", duration: "18:42" },
@@ -78,7 +78,7 @@ export const courses: Course[] = [
     lessons: 18,
     students: 642,
     category: "产品设计",
-    emoji: "🎨",
+    emoji: "",
     lessonsList: [
       { title: "什么是设计系统", duration: "15:20" },
       { title: "Design Token 的搭建", duration: "21:00" },
@@ -96,7 +96,7 @@ export const courses: Course[] = [
     lessons: 32,
     students: 2148,
     category: "AI 应用",
-    emoji: "🤖",
+    emoji: "",
     lessonsList: [
       { title: "LLM 的能力地图", duration: "28:00" },
       { title: "Prompt 工程实战", duration: "32:14" },
@@ -114,7 +114,7 @@ export const courses: Course[] = [
     lessons: 15,
     students: 856,
     category: "运营增长",
-    emoji: "📈",
+    emoji: "",
     lessonsList: [
       { title: "增长模型 AARRR", duration: "20:00" },
       { title: "假设与实验设计", duration: "24:30" },

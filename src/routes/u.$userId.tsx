@@ -50,13 +50,14 @@ function ProfilePage() {
       ? Math.min(100, Math.round(((p.points - (p.nextMin - 50)) / 50) * 100)) // 视觉用，下方进度条更准确
       : 100;
   const progress = p.nextMin != null ? Math.max(0, Math.min(100, ((p.points) / p.nextMin) * 100)) : 100;
+  const initial = p.name?.trim().slice(0, 1) || "用";
 
   return (
     <main className="mx-auto max-w-3xl px-6 py-12">
       <Card className="border-border/60 p-8">
         <div className="flex items-start gap-5">
           <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-primary/10 text-2xl font-medium text-primary">
-            {p.name?.[0] ?? "?"}
+            {initial}
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">

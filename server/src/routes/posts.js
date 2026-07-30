@@ -5,6 +5,11 @@ import { requireAuth, requireRole } from "../auth.js";
 
 const r = Router();
 
+function safeInitial(name) {
+  const initial = String(name || "").trim().slice(0, 1);
+  return initial && initial !== "?" && initial !== "？" ? initial : "用";
+}
+
 const PostIn = z.object({
   title: z.string().min(1).max(200),
   content: z.string().min(1),
@@ -55,7 +60,7 @@ r.get("/:id", async (req, res) => {
       id: r.id,
       postId: r.post_id,
       author: r.author_name,
-      authorAvatar: r.author_name?.[0] ?? "?",
+      authorAvatar: safeInitial(r.author_name),
       authorPoints: Number(r.author_points ?? 0),
       content: r.content,
       likes: r.likes,
@@ -132,7 +137,7 @@ function rowToPost(p) {
     category: p.category,
     courseId: p.course_id,
     author: p.author_name,
-    authorAvatar: p.author_name?.[0] ?? "?",
+    authorAvatar: safeInitial(p.author_name),
     authorRole: p.author_role,
     authorId: p.author_id,
     authorPoints: Number(p.author_points ?? 0),
