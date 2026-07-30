@@ -1,5 +1,76 @@
 import UIKit
 import Capacitor
+import WebKit
+
+class SuperbrainBridgeViewController: CAPBridgeViewController {
+
+    override func webViewConfiguration(for instanceConfiguration: InstanceConfiguration) -> WKWebViewConfiguration {
+        let configuration = super.webViewConfiguration(for: instanceConfiguration)
+        let script = WKUserScript(
+            source: Self.chineseFontInjectionScript(),
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: false
+        )
+        configuration.userContentController.addUserScript(script)
+        return configuration
+    }
+
+    private static func chineseFontInjectionScript() -> String {
+        let fontDataUrl: String
+
+        if let fontUrl = Bundle.main.url(forResource: "NotoSansSC-Regular", withExtension: "woff2"),
+           let data = try? Data(contentsOf: fontUrl) {
+            fontDataUrl = "data:font/woff2;base64,\(data.base64EncodedString())"
+        } else {
+            fontDataUrl = ""
+        }
+
+        let fontFace = fontDataUrl.isEmpty
+            ? ""
+            : """
+            @font-face {
+              font-family: 'SuperbrainChinese';
+              src: url('\(fontDataUrl)') format('woff2');
+              font-weight: 100 900;
+              font-style: normal;
+              font-display: swap;
+            }
+            """
+
+        let css = """
+        \(fontFace)
+        html, body, body *, input, textarea, select, button {
+          font-family: 'SuperbrainChinese', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif !important;
+          -webkit-font-smoothing: antialiased;
+          text-rendering: optimizeLegibility;
+        }
+        html { -webkit-text-size-adjust: 100%; }
+        """
+
+        return """
+        (function () {
+          document.documentElement.setAttribute('lang', 'zh-CN');
+          var meta = document.querySelector('meta[charset]');
+          if (!meta) {
+            meta = document.createElement('meta');
+            meta.setAttribute('charset', 'UTF-8');
+            (document.head || document.documentElement).prepend(meta);
+          }
+
+          function installSuperbrainChineseFont() {
+            if (document.querySelector('style[data-superbrain-chinese-font]')) return;
+            var style = document.createElement('style');
+            style.setAttribute('data-superbrain-chinese-font', 'true');
+            style.textContent = `\(css)`;
+            (document.head || document.documentElement).appendChild(style);
+          }
+
+          installSuperbrainChineseFont();
+          document.addEventListener('DOMContentLoaded', installSuperbrainChineseFont, { once: true });
+        })();
+        """
+    }
+}
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
