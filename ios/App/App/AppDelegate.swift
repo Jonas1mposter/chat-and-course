@@ -16,31 +16,10 @@ class SuperbrainBridgeViewController: CAPBridgeViewController {
     }
 
     private static func chineseFontInjectionScript() -> String {
-        let fontDataUrl: String
-
-        if let fontUrl = Bundle.main.url(forResource: "NotoSansSC-Regular", withExtension: "woff2"),
-           let data = try? Data(contentsOf: fontUrl) {
-            fontDataUrl = "data:font/woff2;base64,\(data.base64EncodedString())"
-        } else {
-            fontDataUrl = ""
-        }
-
-        let fontFace = fontDataUrl.isEmpty
-            ? ""
-            : """
-            @font-face {
-              font-family: 'SuperbrainChinese';
-              src: url('\(fontDataUrl)') format('woff2');
-              font-weight: 100 900;
-              font-style: normal;
-              font-display: swap;
-            }
-            """
-
+        // 只注入字体栈，不再内联 base64 字体（1MB+ 的 data URL 会让 WebContent 进程崩溃）
         let css = """
-        \(fontFace)
         html, body, body *, input, textarea, select, button {
-          font-family: 'SuperbrainChinese', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif !important;
+          font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Heiti SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Helvetica Neue', Arial, sans-serif !important;
           -webkit-font-smoothing: antialiased;
           text-rendering: optimizeLegibility;
         }
