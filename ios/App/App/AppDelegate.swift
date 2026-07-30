@@ -47,3 +47,59 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
 }
+
+// MARK: - UIScene lifecycle
+
+class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+
+    var window: UIWindow?
+
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        guard let windowScene = scene as? UIWindowScene else { return }
+
+        let window = UIWindow(windowScene: windowScene)
+        window.rootViewController = UIStoryboard(name: "Main", bundle: nil).instantiateInitialViewController()
+        self.window = window
+        window.makeKeyAndVisible()
+
+        for context in connectionOptions.urlContexts {
+            _ = ApplicationDelegateProxy.shared.application(
+                UIApplication.shared,
+                open: context.url,
+                options: [
+                    .sourceApplication: context.options.sourceApplication as Any,
+                    .annotation: context.options.annotation as Any,
+                ]
+            )
+        }
+
+        if let userActivity = connectionOptions.userActivities.first {
+            _ = ApplicationDelegateProxy.shared.application(
+                UIApplication.shared,
+                continue: userActivity,
+                restorationHandler: { _ in }
+            )
+        }
+    }
+
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        for context in URLContexts {
+            _ = ApplicationDelegateProxy.shared.application(
+                UIApplication.shared,
+                open: context.url,
+                options: [
+                    .sourceApplication: context.options.sourceApplication as Any,
+                    .annotation: context.options.annotation as Any,
+                ]
+            )
+        }
+    }
+
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        _ = ApplicationDelegateProxy.shared.application(
+            UIApplication.shared,
+            continue: userActivity,
+            restorationHandler: { _ in }
+        )
+    }
+}
