@@ -66,6 +66,10 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>PrivacyPolicyURL</key>
+	<string>https://superbrain-studio.cn/privacy</string>
+	<key>SupportURL</key>
+	<string>https://superbrain-studio.cn/support</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoadsInWebContent</key>
