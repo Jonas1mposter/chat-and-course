@@ -25,6 +25,9 @@ function Index() {
   const { data: courses = [] } = useQuery({
     queryKey: ["courses"],
     queryFn: () => api<Course[]>("/api/courses"),
+    retry: 3,
+    refetchOnMount: "always",
+    staleTime: 0,
   });
   const { data: posts = [] } = useQuery({
     queryKey: ["posts", "全部"],

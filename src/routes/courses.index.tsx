@@ -30,6 +30,9 @@ function CoursesPage() {
   const { data: courses = [], isLoading, error } = useQuery({
     queryKey: ["courses"],
     queryFn: () => api<Course[]>("/api/courses"),
+    retry: 3,
+    refetchOnMount: "always",
+    staleTime: 0,
   });
 
   const categories = ["全部", ...Array.from(new Set(courses.map((c) => c.category).filter(Boolean)))];
