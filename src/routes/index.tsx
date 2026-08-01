@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, BookOpen, MessageSquare, Users, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, MessageSquare, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,6 @@ function Index() {
   const featured = courses.slice(0, 3);
   const hotPosts = posts.slice(0, 3);
   const hero = courses[0];
-  const totalStudents = courses.reduce((s, c) => s + (c.students || 0), 0);
 
   return (
     <main>
@@ -82,7 +81,6 @@ function Index() {
             {[
               { icon: BookOpen, n: String(courses.length), l: "课程数量" },
               { icon: MessageSquare, n: String(posts.length), l: "讨论帖子" },
-              { icon: Users, n: String(totalStudents), l: "在学人次" },
             ].map((s) => (
               <div key={s.l}>
                 <s.icon className="h-5 w-5 text-primary-foreground/70" />
@@ -159,7 +157,6 @@ function Index() {
                 </p>
                 <div className="mt-6 flex items-center justify-between text-xs text-muted-foreground">
                   <span>{c.instructor} · {c.level}</span>
-                  <span>{c.students.toLocaleString()} 人在学</span>
                 </div>
               </Card>
             </Link>

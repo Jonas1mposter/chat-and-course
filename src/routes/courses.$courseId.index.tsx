@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock, MessageSquare, HelpCircle, Trash2, CheckCircle2, XCircle, Lightbulb, Paperclip } from "lucide-react";
+import { ArrowLeft, PlayCircle, Clock, BookOpen, Lock, MessageSquare, HelpCircle, Trash2, CheckCircle2, XCircle, Lightbulb, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -387,7 +387,6 @@ function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
             <div className="mt-6 space-y-3 text-sm">
               <Row icon={BookOpen} label="课时" value={`${course.lessons} 节`} />
               <Row icon={Clock} label="时长" value={course.duration} />
-              <Row icon={Users} label="在学" value={`${course.students.toLocaleString()} 人`} />
             </div>
             <div className="mt-6 border-t border-border/60 pt-4 text-sm">
               <div className="text-muted-foreground">主讲老师</div>
