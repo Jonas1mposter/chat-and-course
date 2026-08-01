@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SupportRouteImport } from './routes/support'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -28,6 +30,16 @@ import { Route as AdminPasswordsRouteImport } from './routes/admin.passwords'
 import { Route as CoursesCourseIdIndexRouteImport } from './routes/courses.$courseId.index'
 import { Route as CoursesCourseIdEditRouteImport } from './routes/courses.$courseId.edit'
 
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LeaderboardRoute = LeaderboardRouteImport.update({
   id: '/leaderboard',
   path: '/leaderboard',
@@ -124,6 +136,8 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/privacy': typeof PrivacyRoute
+  '/support': typeof SupportRoute
   '/admin/passwords': typeof AdminPasswordsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
@@ -144,6 +158,8 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/privacy': typeof PrivacyRoute
+  '/support': typeof SupportRoute
   '/admin/passwords': typeof AdminPasswordsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/courses/new': typeof CoursesNewRoute
@@ -164,6 +180,8 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/privacy': typeof PrivacyRoute
+  '/support': typeof SupportRoute
   '/admin/passwords': typeof AdminPasswordsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
@@ -186,6 +204,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/leaderboard'
+    | '/privacy'
+    | '/support'
     | '/admin/passwords'
     | '/admin/setup'
     | '/courses/$courseId'
@@ -206,6 +226,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/leaderboard'
+    | '/privacy'
+    | '/support'
     | '/admin/passwords'
     | '/admin/setup'
     | '/courses/new'
@@ -225,6 +247,8 @@ export interface FileRouteTypes {
     | '/auth'
     | '/forgot-password'
     | '/leaderboard'
+    | '/privacy'
+    | '/support'
     | '/admin/passwords'
     | '/admin/setup'
     | '/courses/$courseId'
@@ -246,6 +270,8 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LeaderboardRoute: typeof LeaderboardRoute
+  PrivacyRoute: typeof PrivacyRoute
+  SupportRoute: typeof SupportRoute
   AdminPasswordsRoute: typeof AdminPasswordsRoute
   AdminSetupRoute: typeof AdminSetupRoute
   CoursesCourseIdRoute: typeof CoursesCourseIdRouteWithChildren
@@ -262,6 +288,20 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/leaderboard': {
       id: '/leaderboard'
       path: '/leaderboard'
@@ -410,6 +450,8 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LeaderboardRoute: LeaderboardRoute,
+  PrivacyRoute: PrivacyRoute,
+  SupportRoute: SupportRoute,
   AdminPasswordsRoute: AdminPasswordsRoute,
   AdminSetupRoute: AdminSetupRoute,
   CoursesCourseIdRoute: CoursesCourseIdRouteWithChildren,

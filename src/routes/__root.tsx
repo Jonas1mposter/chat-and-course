@@ -124,16 +124,20 @@ function RootComponent() {
           <SiteHeader />
           <Outlet />
           <footer className="border-t border-border/60 mt-24">
-            <div className="mx-auto max-w-6xl px-6 py-8 text-sm text-muted-foreground flex flex-wrap items-center justify-between gap-3">
+            <div className="mx-auto max-w-6xl px-6 py-8 flex flex-col gap-4 text-sm text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
               <span>© 超脑 Studio · 让学习成为一件愉快的事</span>
-              <a
-                href="https://beian.miit.gov.cn/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-foreground transition-colors"
-              >
-                沪ICP备2025139369号
-              </a>
+              <div className="flex flex-wrap items-center gap-4">
+                <Link to="/support" className="hover:text-foreground transition-colors">技术支持</Link>
+                <Link to="/privacy" className="hover:text-foreground transition-colors">隐私政策</Link>
+                <a
+                  href="https://beian.miit.gov.cn/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-foreground transition-colors"
+                >
+                  沪ICP备2025139369号
+                </a>
+              </div>
             </div>
           </footer>
         </div>
