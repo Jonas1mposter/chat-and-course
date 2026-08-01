@@ -119,11 +119,11 @@ r.post("/", requireRole("teacher", "admin"), async (req, res) => {
   const c = p.data;
   try {
     const { rows } = await q(
-      `INSERT INTO courses(id,title,description,instructor,level,duration,lessons,students,category,emoji,lessons_list,published,owner_id,requires_code,preview_lessons,cover_url)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *`,
+      `INSERT INTO courses(id,title,description,instructor,level,duration,lessons,category,emoji,lessons_list,published,owner_id,requires_code,preview_lessons,cover_url)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`,
       [
         c.id, c.title, c.description, c.instructor, c.level, c.duration,
-        c.lessons, c.students, c.category, c.emoji,
+        c.lessons, c.category, c.emoji,
         JSON.stringify(c.lessonsList), c.published, req.user.sub,
         c.requiresCode, c.previewLessons, c.coverUrl,
       ],
@@ -149,7 +149,7 @@ r.put("/:id", requireRole("teacher", "admin"), async (req, res) => {
   const map = {
     title: "title", description: "description", instructor: "instructor",
     level: "level", duration: "duration", lessons: "lessons",
-    students: "students", category: "category", emoji: "emoji",
+    category: "category", emoji: "emoji",
     published: "published",
     requiresCode: "requires_code",
     previewLessons: "preview_lessons",
@@ -228,7 +228,6 @@ r.post("/:id/join", requireAuth, async (req, res) => {
      ON CONFLICT DO NOTHING`,
     [req.user.sub, courseId],
   );
-  await q("UPDATE courses SET students = students + 1 WHERE id=$1", [courseId]);
   res.json({ ok: true });
 });
 
