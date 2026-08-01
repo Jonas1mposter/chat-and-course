@@ -387,7 +387,6 @@ function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
             <div className="mt-6 space-y-3 text-sm">
               <Row icon={BookOpen} label="课时" value={`${course.lessons} 节`} />
               <Row icon={Clock} label="时长" value={course.duration} />
-              <Row icon={Users} label="在学" value={`${course.students.toLocaleString()} 人`} />
             </div>
             <div className="mt-6 border-t border-border/60 pt-4 text-sm">
               <div className="text-muted-foreground">主讲老师</div>
