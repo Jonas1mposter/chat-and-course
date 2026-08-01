@@ -84,7 +84,10 @@ r.get("/", async (req, res) => {
     sql = `SELECT c.*, ${countSql} FROM courses c WHERE c.published = true OR c.owner_id = $1`;
     params.push(me.sub);
   }
-  if (me?.role === "admin") sql = `SELECT c.*, ${countSql} FROM courses c`;
+  if (me?.role === "admin") {
+    sql = `SELECT c.*, ${countSql} FROM courses c`;
+    params.length = 0;
+  }
   const { rows } = await q(sql + " ORDER BY c.created_at DESC", params);
   res.json(rows.map(rowToCourse));
 });
