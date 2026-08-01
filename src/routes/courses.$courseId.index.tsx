@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, PlayCircle, Clock, Users, BookOpen, Lock, MessageSquare, HelpCircle, Trash2, CheckCircle2, XCircle, Lightbulb, Paperclip } from "lucide-react";
+import { ArrowLeft, PlayCircle, Clock, BookOpen, Lock, MessageSquare, HelpCircle, Trash2, CheckCircle2, XCircle, Lightbulb, Paperclip } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
