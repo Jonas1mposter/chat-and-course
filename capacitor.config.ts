@@ -19,7 +19,10 @@ const config: CapacitorConfig = {
     allowsLinkPreview: true,
     scrollEnabled: true,
     contentInset: "always",
+    limitsNavigationsToAppBoundDomains: false,
   },
+  // 允许网页内 <video> 内联播放且不需要用户手势
+  android: {},
   plugins: {
     SplashScreen: {
       launchShowDuration: 2000,
