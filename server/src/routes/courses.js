@@ -74,21 +74,28 @@ const rowToCourse = (row, opts = {}) => {
 };
 
 // 列表：未登录只能看 published；登录后讲师/管理员可看自己的草稿
+// 在学人次 = 实际加入该课程的人数（参考 course_enrollments 动态统计）
 r.get("/", async (req, res) => {
   const me = req.user;
-  let sql = "SELECT * FROM courses WHERE published = true";
+  const countSql = "(SELECT count(*) FROM course_enrollments ce WHERE ce.course_id = c.id) AS students";
+  let sql = `SELECT c.*, ${countSql} FROM courses c WHERE c.published = true`;
   const params = [];
   if (me && (me.role === "admin" || me.role === "teacher")) {
-    sql = "SELECT * FROM courses WHERE published = true OR owner_id = $1";
+    sql = `SELECT c.*, ${countSql} FROM courses c WHERE c.published = true OR c.owner_id = $1`;
     params.push(me.sub);
   }
-  if (me?.role === "admin") sql = "SELECT * FROM courses";
-  const { rows } = await q(sql + " ORDER BY created_at DESC", params);
+  if (me?.role === "admin") sql = `SELECT c.*, ${countSql} FROM courses c`;
+  const { rows } = await q(sql + " ORDER BY c.created_at DESC", params);
   res.json(rows.map(rowToCourse));
 });
 
 r.get("/:id", async (req, res) => {
-  const { rows } = await q("SELECT * FROM courses WHERE id=$1", [req.params.id]);
+  const { rows } = await q(
+    `SELECT c.*,
+      (SELECT count(*) FROM course_enrollments ce WHERE ce.course_id = c.id) AS students
+     FROM courses c WHERE c.id=$1`,
+    [req.params.id],
+  );
   if (!rows[0]) return res.status(404).json({ error: "课程不存在" });
   const me = req.user;
   let enrolled = false;
