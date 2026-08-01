@@ -19,6 +19,7 @@ const config: CapacitorConfig = {
     allowsLinkPreview: true,
     scrollEnabled: true,
     contentInset: "always",
+    limitsNavigationsToAppBoundDomains: false,
   },
   plugins: {
     SplashScreen: {

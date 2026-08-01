@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Heart, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { api } from "@/lib/api";
+import { api, playableUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
 type Video = {
@@ -52,7 +52,14 @@ function VideoDetail() {
       </Link>
 
       <div className="mt-6 overflow-hidden rounded-xl bg-black">
-        <video src={v.url} poster={v.coverUrl || undefined} controls className="aspect-video w-full" />
+        <video
+          src={playableUrl(v.url)}
+          poster={playableUrl(v.coverUrl)}
+          controls
+          playsInline
+          preload="metadata"
+          className="aspect-video w-full"
+        />
       </div>
 
       <h1 className="mt-6 text-2xl font-semibold leading-tight tracking-tight">{v.title}</h1>

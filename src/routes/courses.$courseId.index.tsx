@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/lib/api";
+import { api, playableUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Course } from "@/lib/mock-data";
 import { CourseEmoji } from "@/components/course-emoji";
@@ -257,7 +257,7 @@ function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
                 {activeLesson.videoUrl ? (
                   <video
                     key={activeLesson.videoUrl}
-                    src={activeLesson.videoUrl}
+                    src={playableUrl(activeLesson.videoUrl)}
                     controls
                     playsInline
                     preload="metadata"

@@ -6,6 +6,11 @@ class SuperbrainBridgeViewController: CAPBridgeViewController {
 
     override func webViewConfiguration(for instanceConfiguration: InstanceConfiguration) -> WKWebViewConfiguration {
         let configuration = super.webViewConfiguration(for: instanceConfiguration)
+        // 视频相关：允许内联播放、允许自动播放（不要求用户手势）、允许画中画
+        configuration.allowsInlineMediaPlayback = true
+        configuration.allowsPictureInPictureMediaPlayback = true
+        configuration.mediaTypesRequiringUserActionForPlayback = []
+        configuration.allowsAirPlayForMediaPlayback = true
         let script = WKUserScript(
             source: Self.chineseFontInjectionScript(),
             injectionTime: .atDocumentStart,
