@@ -74,21 +74,28 @@ const rowToCourse = (row, opts = {}) => {
 };
 
 // 列表：未登录只能看 published；登录后讲师/管理员可看自己的草稿
+// 在学人次 = 实际加入该课程的人数（参考 course_enrollments 动态统计）
 r.get("/", async (req, res) => {
   const me = req.user;
-  let sql = "SELECT * FROM courses WHERE published = true";
+  const countSql = "(SELECT count(*) FROM course_enrollments ce WHERE ce.course_id = c.id) AS students";
+  let sql = `SELECT c.*, ${countSql} FROM courses c WHERE c.published = true`;
   const params = [];
   if (me && (me.role === "admin" || me.role === "teacher")) {
-    sql = "SELECT * FROM courses WHERE published = true OR owner_id = $1";
+    sql = `SELECT c.*, ${countSql} FROM courses c WHERE c.published = true OR c.owner_id = $1`;
     params.push(me.sub);
   }
-  if (me?.role === "admin") sql = "SELECT * FROM courses";
-  const { rows } = await q(sql + " ORDER BY created_at DESC", params);
+  if (me?.role === "admin") sql = `SELECT c.*, ${countSql} FROM courses c`;
+  const { rows } = await q(sql + " ORDER BY c.created_at DESC", params);
   res.json(rows.map(rowToCourse));
 });
 
 r.get("/:id", async (req, res) => {
-  const { rows } = await q("SELECT * FROM courses WHERE id=$1", [req.params.id]);
+  const { rows } = await q(
+    `SELECT c.*,
+      (SELECT count(*) FROM course_enrollments ce WHERE ce.course_id = c.id) AS students
+     FROM courses c WHERE c.id=$1`,
+    [req.params.id],
+  );
   if (!rows[0]) return res.status(404).json({ error: "课程不存在" });
   const me = req.user;
   let enrolled = false;
@@ -112,11 +119,11 @@ r.post("/", requireRole("teacher", "admin"), async (req, res) => {
   const c = p.data;
   try {
     const { rows } = await q(
-      `INSERT INTO courses(id,title,description,instructor,level,duration,lessons,students,category,emoji,lessons_list,published,owner_id,requires_code,preview_lessons,cover_url)
-       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16) RETURNING *`,
+      `INSERT INTO courses(id,title,description,instructor,level,duration,lessons,category,emoji,lessons_list,published,owner_id,requires_code,preview_lessons,cover_url)
+       VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *`,
       [
         c.id, c.title, c.description, c.instructor, c.level, c.duration,
-        c.lessons, c.students, c.category, c.emoji,
+        c.lessons, c.category, c.emoji,
         JSON.stringify(c.lessonsList), c.published, req.user.sub,
         c.requiresCode, c.previewLessons, c.coverUrl,
       ],
@@ -142,7 +149,7 @@ r.put("/:id", requireRole("teacher", "admin"), async (req, res) => {
   const map = {
     title: "title", description: "description", instructor: "instructor",
     level: "level", duration: "duration", lessons: "lessons",
-    students: "students", category: "category", emoji: "emoji",
+    category: "category", emoji: "emoji",
     published: "published",
     requiresCode: "requires_code",
     previewLessons: "preview_lessons",
@@ -221,7 +228,6 @@ r.post("/:id/join", requireAuth, async (req, res) => {
      ON CONFLICT DO NOTHING`,
     [req.user.sub, courseId],
   );
-  await q("UPDATE courses SET students = students + 1 WHERE id=$1", [courseId]);
   res.json({ ok: true });
 });
 
