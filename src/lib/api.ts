@@ -102,3 +102,19 @@ export function mediaUrl(result: { key: string; publicUrl: string }): string {
   // 相对 key 时拼上后端地址
   return `${BASE}/uploads/${result.publicUrl}`;
 }
+
+/**
+ * 播放地址规范化：
+ * iOS WKWebView 的 ATS 会直接拦截 http:// 媒体资源（表现为播放键打叉），
+ * 所以统一升级到 https，并补全相对路径。
+ */
+export function playableUrl(url?: string | null): string | undefined {
+  if (!url) return undefined;
+  const u = url.trim();
+  if (!u) return undefined;
+  if (u.startsWith("//")) return `https:${u}`;
+  if (u.startsWith("http://")) return `https://${u.slice("http://".length)}`;
+  if (u.startsWith("https://")) return u;
+  if (u.startsWith("/")) return `${BASE}${u}`;
+  return u;
+}
