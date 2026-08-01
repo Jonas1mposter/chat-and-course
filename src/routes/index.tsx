@@ -82,7 +82,6 @@ function Index() {
             {[
               { icon: BookOpen, n: String(courses.length), l: "课程数量" },
               { icon: MessageSquare, n: String(posts.length), l: "讨论帖子" },
-              { icon: Users, n: String(totalStudents), l: "在学人次" },
             ].map((s) => (
               <div key={s.l}>
                 <s.icon className="h-5 w-5 text-primary-foreground/70" />
