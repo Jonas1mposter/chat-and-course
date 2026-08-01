@@ -58,7 +58,6 @@ function VideoDetail() {
           controls
           playsInline
           preload="metadata"
-          crossOrigin="anonymous"
           className="aspect-video w-full"
         />
       </div>
