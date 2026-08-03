@@ -26,6 +26,12 @@ r.get("/", async (req, res) => {
   const params = [];
   if (courseId) { params.push(courseId); where.push(`p.course_id=$${params.length}`); }
   if (category && category !== "全部") { params.push(category); where.push(`p.category=$${params.length}`); }
+  if (req.user?.sub) {
+    params.push(req.user.sub);
+    where.push(
+      `NOT EXISTS (SELECT 1 FROM user_blocks b WHERE b.user_id=$${params.length} AND b.blocked_id=p.author_id)`,
+    );
+  }
   const sql = `
     SELECT p.*, u.name AS author_name, u.role AS author_role,
       user_points(u.id) AS author_points,
@@ -51,14 +57,18 @@ r.get("/:id", async (req, res) => {
   if (!rows[0]) return res.status(404).json({ error: "帖子不存在" });
   const replies = await q(
     `SELECT r.*, u.name AS author_name, user_points(u.id) AS author_points FROM replies r
-     JOIN users u ON u.id=r.author_id WHERE r.post_id=$1 ORDER BY r.created_at ASC`,
-    [req.params.id],
+     JOIN users u ON u.id=r.author_id
+     WHERE r.post_id=$1
+       ${me ? "AND NOT EXISTS (SELECT 1 FROM user_blocks b WHERE b.user_id=$2 AND b.blocked_id=r.author_id)" : ""}
+     ORDER BY r.created_at ASC`,
+    me ? [req.params.id, me] : [req.params.id],
   );
   res.json({
     post: rowToPost(rows[0]),
     replies: replies.rows.map((r) => ({
       id: r.id,
       postId: r.post_id,
+      authorId: r.author_id,
       author: r.author_name,
       authorAvatar: safeInitial(r.author_name),
       authorPoints: Number(r.author_points ?? 0),
