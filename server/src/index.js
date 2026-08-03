@@ -11,6 +11,7 @@ import posts from "./routes/posts.js";
 import videos from "./routes/videos.js";
 import users from "./routes/users.js";
 import admin from "./routes/admin.js";
+import moderation from "./routes/moderation.js";
 import lessonComments from "./routes/lesson-comments.js";
 import { ensureUploadsDir, UPLOADS_DIR } from "./uploads.js";
 
@@ -36,6 +37,7 @@ app.use("/api/posts", posts);
 app.use("/api/videos", videos);
 app.use("/api/users", users);
 app.use("/api/admin", admin);
+app.use("/api/moderation", moderation);
 
 app.use((err, _req, res, _next) => {
   console.error(err);
