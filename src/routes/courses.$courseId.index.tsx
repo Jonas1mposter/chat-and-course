@@ -607,6 +607,14 @@ function LessonComments({
                   )}
               </div>
               <p className="mt-2 whitespace-pre-wrap text-sm">{c.content}</p>
+              <div className="mt-2 flex justify-end">
+                <ReportDialog
+                  targetType="lesson_comment"
+                  targetId={c.id}
+                  authorId={c.authorId}
+                  authorName={c.authorName}
+                />
+              </div>
             </Card>
           ))
         )}
