@@ -11,6 +11,7 @@ import { api, playableUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Course } from "@/lib/mock-data";
 import { CourseEmoji } from "@/components/course-emoji";
+import { ReportDialog } from "@/components/report-dialog";
 
 export const Route = createFileRoute("/courses/$courseId/")({
   head: () => ({ meta: [{ title: "课程详情 — 超脑 Studio" }] }),
