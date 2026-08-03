@@ -9,11 +9,13 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VideosIndexRouteImport } from './routes/videos.index'
 import { Route as DiscussionsIndexRouteImport } from './routes/discussions.index'
@@ -30,6 +32,11 @@ import { Route as AdminPasswordsRouteImport } from './routes/admin.passwords'
 import { Route as CoursesCourseIdIndexRouteImport } from './routes/courses.$courseId.index'
 import { Route as CoursesCourseIdEditRouteImport } from './routes/courses.$courseId.edit'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SupportRoute = SupportRouteImport.update({
   id: '/support',
   path: '/support',
@@ -53,6 +60,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -133,11 +145,13 @@ const CoursesCourseIdEditRoute = CoursesCourseIdEditRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
   '/admin/passwords': typeof AdminPasswordsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
@@ -155,11 +169,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
   '/admin/passwords': typeof AdminPasswordsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/courses/new': typeof CoursesNewRoute
@@ -177,11 +193,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/auth': typeof AuthRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
   '/admin/passwords': typeof AdminPasswordsRoute
   '/admin/setup': typeof AdminSetupRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
@@ -201,11 +219,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
     | '/auth'
     | '/forgot-password'
     | '/leaderboard'
     | '/privacy'
     | '/support'
+    | '/terms'
     | '/admin/passwords'
     | '/admin/setup'
     | '/courses/$courseId'
@@ -223,11 +243,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
     | '/auth'
     | '/forgot-password'
     | '/leaderboard'
     | '/privacy'
     | '/support'
+    | '/terms'
     | '/admin/passwords'
     | '/admin/setup'
     | '/courses/new'
@@ -244,11 +266,13 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account'
     | '/auth'
     | '/forgot-password'
     | '/leaderboard'
     | '/privacy'
     | '/support'
+    | '/terms'
     | '/admin/passwords'
     | '/admin/setup'
     | '/courses/$courseId'
@@ -267,11 +291,13 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   AuthRoute: typeof AuthRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LeaderboardRoute: typeof LeaderboardRoute
   PrivacyRoute: typeof PrivacyRoute
   SupportRoute: typeof SupportRoute
+  TermsRoute: typeof TermsRoute
   AdminPasswordsRoute: typeof AdminPasswordsRoute
   AdminSetupRoute: typeof AdminSetupRoute
   CoursesCourseIdRoute: typeof CoursesCourseIdRouteWithChildren
@@ -288,6 +314,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/support': {
       id: '/support'
       path: '/support'
@@ -321,6 +354,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -447,11 +487,13 @@ const CoursesCourseIdRouteWithChildren = CoursesCourseIdRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   AuthRoute: AuthRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LeaderboardRoute: LeaderboardRoute,
   PrivacyRoute: PrivacyRoute,
   SupportRoute: SupportRoute,
+  TermsRoute: TermsRoute,
   AdminPasswordsRoute: AdminPasswordsRoute,
   AdminSetupRoute: AdminSetupRoute,
   CoursesCourseIdRoute: CoursesCourseIdRouteWithChildren,
@@ -468,13 +510,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

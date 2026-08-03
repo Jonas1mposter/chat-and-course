@@ -11,6 +11,7 @@ import { api, playableUrl } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Course } from "@/lib/mock-data";
 import { CourseEmoji } from "@/components/course-emoji";
+import { ReportDialog } from "@/components/report-dialog";
 
 export const Route = createFileRoute("/courses/$courseId/")({
   head: () => ({ meta: [{ title: "课程详情 — 超脑 Studio" }] }),
@@ -607,6 +608,14 @@ function LessonComments({
                   )}
               </div>
               <p className="mt-2 whitespace-pre-wrap text-sm">{c.content}</p>
+              <div className="mt-2 flex justify-end">
+                <ReportDialog
+                  targetType="lesson_comment"
+                  targetId={c.id}
+                  authorId={c.authorId}
+                  authorName={c.authorName}
+                />
+              </div>
             </Card>
           ))
         )}

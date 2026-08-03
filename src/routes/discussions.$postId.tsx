@@ -10,6 +10,7 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import type { Post, Reply } from "@/lib/mock-data";
 import { TierBadge } from "@/components/tier-badge";
+import { ReportDialog } from "@/components/report-dialog";
 
 export const Route = createFileRoute("/discussions/$postId")({
   head: () => ({ meta: [{ title: "帖子详情 — 讨论区" }] }),
@@ -105,6 +106,14 @@ function PostDetail() {
           <Button variant="ghost" size="sm">
             <Share2 className="mr-1 h-4 w-4" /> 分享
           </Button>
+          <div className="ml-auto">
+            <ReportDialog
+              targetType="post"
+              targetId={post.id}
+              authorId={(post as any).authorId}
+              authorName={post.author}
+            />
+          </div>
         </div>
       </article>
 
@@ -130,6 +139,12 @@ function PostDetail() {
                     <Heart className="h-3.5 w-3.5" /> {r.likes}
                   </button>
                   <button className="hover:text-foreground">回复</button>
+                  <ReportDialog
+                    targetType="reply"
+                    targetId={r.id}
+                    authorId={(r as any).authorId}
+                    authorName={r.author}
+                  />
                 </div>
               </div>
             </Card>

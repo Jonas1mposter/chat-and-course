@@ -1,4 +1,6 @@
 import { Router } from "express";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { q } from "../db.js";
 import { tierOf } from "../tier.js";
 import { requireAuth } from "../auth.js";
@@ -26,6 +28,26 @@ r.get("/leaderboard", async (_req, res) => {
 // 我自己的统计（含明细）
 r.get("/me/stats", requireAuth, async (req, res) => {
   res.json(await statsFor(req.user.sub));
+});
+
+// 注销账号（App Store 5.1.1(v) 必须提供 App 内删除账号入口）
+r.delete("/me", requireAuth, async (req, res) => {
+  const password = String(req.body?.password || "");
+  const u = await q("SELECT id,email,password_hash FROM users WHERE id=$1", [
+    req.user.sub,
+  ]);
+  if (!u.rowCount) return res.status(404).json({ error: "用户不存在" });
+  const ok = password && (await bcrypt.compare(password, u.rows[0].password_hash));
+  if (!ok) return res.status(403).json({ error: "密码不正确，无法注销账号" });
+
+  const emailHash = crypto
+    .createHash("sha256")
+    .update(String(u.rows[0].email).toLowerCase())
+    .digest("hex");
+  await q("INSERT INTO account_deletions(email_hash) VALUES($1)", [emailHash]);
+  // 级联删除：帖子、回复、评论、进度、点赞、报名等均带 ON DELETE CASCADE
+  await q("DELETE FROM users WHERE id=$1", [req.user.sub]);
+  res.json({ ok: true });
 });
 
 // 任意用户的公开统计

@@ -177,3 +177,34 @@ CREATE TABLE IF NOT EXISTS password_reset_logs (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS prl_created_idx ON password_reset_logs(created_at DESC);
+
+-- ============ 内容审核：举报 / 屏蔽（App Store 1.2 UGC 要求）============
+CREATE TABLE IF NOT EXISTS content_reports (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  reporter_id uuid REFERENCES users(id) ON DELETE SET NULL,
+  target_type text NOT NULL,   -- 'post' | 'reply' | 'lesson_comment' | 'video' | 'user'
+  target_id   text NOT NULL,
+  reason      text NOT NULL,
+  detail      text,
+  status      text NOT NULL DEFAULT 'open',   -- 'open' | 'resolved'
+  resolution  text,
+  resolved_by uuid REFERENCES users(id) ON DELETE SET NULL,
+  resolved_at timestamptz,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS content_reports_status_idx
+  ON content_reports(status, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS user_blocks (
+  user_id    uuid REFERENCES users(id) ON DELETE CASCADE,
+  blocked_id uuid REFERENCES users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(user_id, blocked_id)
+);
+
+-- 账号注销记录（保留最小化审计信息，不含个人内容）
+CREATE TABLE IF NOT EXISTS account_deletions (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email_hash text NOT NULL,
+  deleted_at timestamptz NOT NULL DEFAULT now()
+);

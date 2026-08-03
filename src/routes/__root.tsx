@@ -129,6 +129,8 @@ function RootComponent() {
               <div className="flex flex-wrap items-center gap-4">
                 <Link to="/support" className="hover:text-foreground transition-colors">技术支持</Link>
                 <Link to="/privacy" className="hover:text-foreground transition-colors">隐私政策</Link>
+                <Link to="/terms" className="hover:text-foreground transition-colors">用户协议</Link>
+                <Link to="/account" className="hover:text-foreground transition-colors">账号设置</Link>
                 <a
                   href="https://beian.miit.gov.cn/"
                   target="_blank"
