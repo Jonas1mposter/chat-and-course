@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import {
   Outlet,
   Link,
@@ -34,9 +35,39 @@ function NotFoundComponent() {
   );
 }
 
+const CHUNK_ERROR_RE =
+  /dynamically imported module|Importing a module script failed|Loading chunk|ChunkLoadError|module script failed|Unable to preload/i;
+
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
+  const [recovering, setRecovering] = useState(false);
+
+  useEffect(() => {
+    // 应用更新后，WebView（尤其是 iOS）可能仍缓存旧的 index.html，
+    // 导致新版本的 JS 分片加载失败。此时自动强制刷新一次即可恢复。
+    if (!CHUNK_ERROR_RE.test(String(error?.message ?? ""))) return;
+    try {
+      const key = "chunk-reload-at";
+      const last = Number(sessionStorage.getItem(key) ?? 0);
+      if (Date.now() - last < 30_000) return;
+      sessionStorage.setItem(key, String(Date.now()));
+    } catch {
+      /* sessionStorage 不可用时直接刷新 */
+    }
+    setRecovering(true);
+    const url = new URL(window.location.href);
+    url.searchParams.set("_r", String(Date.now()));
+    window.location.replace(url.toString());
+  }, [error]);
+
+  if (recovering) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-4 text-sm text-muted-foreground">
+        正在更新到最新版本…
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -45,23 +76,29 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           This page didn't load
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          页面加载失败，请重试或返回首页。
         </p>
+        {error?.message && (
+          <p className="mt-3 break-words rounded-md bg-muted px-3 py-2 text-left text-xs text-muted-foreground">
+            {error.message}
+          </p>
+        )}
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
               router.invalidate();
               reset();
+              if (typeof window !== "undefined") window.location.reload();
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            重试
           </button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            返回首页
           </a>
         </div>
       </div>
