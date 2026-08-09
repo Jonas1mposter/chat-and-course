@@ -124,6 +124,7 @@ export function playableUrl(url?: string | null): string | undefined {
  * 失败或非 COS 资源时回退到普通地址。
  */
 const signedCache = new Map<string, { url: string; exp: number }>();
+const inflight = new Map<string, Promise<string | undefined>>();
 export async function signedPlayUrl(url?: string | null): Promise<string | undefined> {
   const base = playableUrl(url);
   if (!base) return undefined;
@@ -131,15 +132,26 @@ export async function signedPlayUrl(url?: string | null): Promise<string | undef
   const hit = signedCache.get(base);
   if (hit && hit.exp > now) return hit.url;
   if (!getToken()) return base;
-  try {
-    const res = await api<{ url: string }>("/api/videos/sign-play", {
-      method: "POST",
-      body: { url: base },
-    });
-    const signed = playableUrl(res.url) || base;
-    signedCache.set(base, { url: signed, exp: now + 90 * 60 * 1000 });
-    return signed;
-  } catch {
-    return base;
-  }
+  // 同一地址并发只请求一次，减少无谓的签名调用
+  const pending = inflight.get(base);
+  if (pending) return pending;
+  const p = (async () => {
+    try {
+      const res = await api<{ url: string; expiresIn?: number }>("/api/videos/sign-play", {
+        method: "POST",
+        body: { url: base },
+      });
+      const signed = playableUrl(res.url) || base;
+      // 提前 20% 过期，避免播放中途签名失效
+      const ttl = Math.max(60, (res.expiresIn ?? 900) * 0.8) * 1000;
+      signedCache.set(base, { url: signed, exp: Date.now() + ttl });
+      return signed;
+    } catch {
+      return base;
+    } finally {
+      inflight.delete(base);
+    }
+  })();
+  inflight.set(base, p);
+  return p;
 }
