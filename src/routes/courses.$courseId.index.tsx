@@ -13,7 +13,16 @@ import { useSignedMedia } from "@/hooks/use-signed-media";
 function LessonVideo({ url }: { url?: string | null }) {
   const src = useSignedMedia(url);
   return (
-    <video src={src} controls playsInline preload="metadata" className="aspect-video w-full" />
+    <video
+      src={src}
+      controls
+      playsInline
+      preload="none"
+      controlsList="nodownload noplaybackrate noremoteplayback"
+      disablePictureInPicture
+      onContextMenu={(e) => e.preventDefault()}
+      className="aspect-video w-full"
+    />
   );
 }
 import { useAuth } from "@/lib/auth";
