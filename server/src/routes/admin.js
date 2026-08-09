@@ -105,8 +105,6 @@ r.get("/password-reset-logs", requireRole("admin"), async (req, res) => {
   res.json(rows);
 });
 
-export default r;
-
 // ============ 滥用防护：封禁 & 审计日志 ============
 r.get("/abuse/config", requireRole("admin"), (_req, res) => res.json(guardConfig));
 
@@ -143,3 +141,5 @@ r.post("/abuse/unban", requireRole("admin"), async (req, res) => {
   await releaseBan({ ...p.data, byUserId: req.user.sub });
   res.json({ ok: true });
 });
+
+export default r;
