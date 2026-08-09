@@ -1,5 +1,6 @@
-const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") || "";
 import { getPass, solveChallenge } from "./challenge";
+
+const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") || "";
 
 const TOKEN_KEY = "chaonao.token";
 
@@ -89,6 +90,8 @@ export function uploadFile<T = { key: string; publicUrl: string; sizeBytes: numb
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${BASE}${path}`);
     if (tok) xhr.setRequestHeader("Authorization", `Bearer ${tok}`);
+    const pass = getPass();
+    if (pass) xhr.setRequestHeader("x-abuse-pass", pass);
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable && onProgress) {
         onProgress(Math.round((e.loaded / e.total) * 100));
