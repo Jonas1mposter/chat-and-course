@@ -11,6 +11,7 @@ import {
   isConfigured as cosIsConfigured,
 } from "../cos.js";
 import { publicUrlFor as localPublicUrlFor, uploaderFor } from "../uploads.js";
+import { rateLimit } from "../ratelimit.js";
 
 const r = Router();
 
@@ -29,15 +30,23 @@ function resolvePublicUrl(key, req) {
 
 // 0) 播放签名：把公开 URL 换成有时效的私有签名地址（防盗链/防批量下载）
 const SignPlayIn = z.object({ url: z.string().min(1) });
-r.post("/sign-play", requireAuth, async (req, res) => {
+// 每个登录用户每小时最多换取 60 次播放地址，阻止脚本批量拉流
+const playLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: Number(process.env.SIGN_PLAY_MAX_PER_HOUR || 60),
+  message: "播放请求过于频繁，请稍后再试",
+});
+r.post("/sign-play", requireAuth, playLimiter, async (req, res) => {
   const p = SignPlayIn.safeParse(req.body);
   if (!p.success) return res.status(400).json({ error: p.error.message });
-  if (!cosIsConfigured()) return res.json({ url: p.data.url });
+  const expiresIn = Math.max(300, Number(process.env.COS_PLAY_EXPIRES || 900));
+  if (!cosIsConfigured()) return res.json({ url: p.data.url, expiresIn });
   const key = keyFromUrl(p.data.url);
-  if (!key) return res.json({ url: p.data.url }); // 非 COS 资源，原样返回
+  if (!key) return res.json({ url: p.data.url, expiresIn }); // 非 COS 资源，原样返回
   try {
-    const signed = await presignGetUrl(key, Number(process.env.COS_PLAY_EXPIRES || 7200));
-    res.json({ url: signed });
+    const signed = await presignGetUrl(key, expiresIn);
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ url: signed, expiresIn });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
