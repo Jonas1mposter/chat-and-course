@@ -13,6 +13,7 @@ import users from "./routes/users.js";
 import admin from "./routes/admin.js";
 import moderation from "./routes/moderation.js";
 import lessonComments from "./routes/lesson-comments.js";
+import challenge from "./routes/challenge.js";
 import { ensureUploadsDir, UPLOADS_DIR } from "./uploads.js";
 import { rateLimit } from "./ratelimit.js";
 import { abuseGuard, restoreBans } from "./guard.js";
@@ -91,6 +92,9 @@ app.use(
     },
   }),
 );
+
+// 人机验证接口本身不受封禁中间件拦截，否则被标记者无法自证
+app.use("/api/challenge", challenge);
 
 // 全局 API 限流（按用户/IP）
 app.use(

@@ -5,6 +5,7 @@
  */
 import { createHash } from "node:crypto";
 import { q } from "./db.js";
+import { issueChallenge, verifyPass, CHALLENGE_CFG } from "./challenge.js";
 
 const num = (v, d) => (Number.isFinite(Number(v)) ? Number(v) : d);
 
@@ -15,6 +16,8 @@ const CFG = {
   uaReqPerMin: num(process.env.BAN_UA_REQ_PER_MIN, 3000),  // 同一 UA 指纹（跨 IP 抓取）
   banMinutes: num(process.env.BAN_MINUTES, 60),            // 首次封禁时长
   banMaxMinutes: num(process.env.BAN_MAX_MINUTES, 1440),   // 升级上限
+  // 达到硬阈值的多少比例时先做人机验证（而不是直接封禁）
+  challengeRatio: Math.min(Math.max(num(process.env.CHALLENGE_RATIO, 0.5), 0.1), 0.95),
 };
 
 const ALLOW_IPS = new Set(
@@ -27,11 +30,14 @@ const windows = new Map();
 const bans = new Map();
 /** 已封禁过的次数，用于时长升级 */
 const strikes = new Map();
+/** 需要人机验证的对象：`${scope}:${value}` -> { until, reason } */
+const suspects = new Map();
 
 setInterval(() => {
   const now = Date.now();
   for (const [k, v] of windows) if (v.reset <= now) windows.delete(k);
   for (const [k, v] of bans) if (v.until <= now) bans.delete(k);
+  for (const [k, v] of suspects) if (v.until <= now) suspects.delete(k);
 }, 60_000).unref?.();
 
 export const clientIp = (req) =>
@@ -41,6 +47,47 @@ export const clientIp = (req) =>
 
 export const uaFingerprint = (req) =>
   createHash("sha1").update(req.get("user-agent") || "unknown").digest("hex").slice(0, 16);
+
+/** 通行证绑定的主体：IP + UA 指纹 */
+export const challengeSubject = (req) => `${clientIp(req)}|${uaFingerprint(req)}`;
+
+export const hasValidPass = (req) =>
+  verifyPass(req.get("x-abuse-pass") || req.query?.pass, challengeSubject(req));
+
+function markSuspect(scope, value, reason, req, detail) {
+  const key = `${scope}:${value}`;
+  const prev = suspects.get(key);
+  suspects.set(key, { until: Date.now() + CHALLENGE_CFG.passMs, reason });
+  if (!prev) {
+    audit("challenge", {
+      scope,
+      value,
+      reason,
+      ip: req ? clientIp(req) : null,
+      userAgent: req?.get?.("user-agent"),
+      userId: req?.user?.sub || null,
+      path: req?.originalUrl,
+      detail,
+    });
+  }
+}
+
+function isSuspect(req) {
+  const now = Date.now();
+  for (const [scope, value] of [
+    ["ip", clientIp(req)],
+    ["ua", uaFingerprint(req)],
+  ]) {
+    const s = suspects.get(`${scope}:${value}`);
+    if (s && s.until > now) return { scope, value, ...s };
+  }
+  return null;
+}
+
+export function clearSuspect(req) {
+  suspects.delete(`ip:${clientIp(req)}`);
+  suspects.delete(`ua:${uaFingerprint(req)}`);
+}
 
 function bump(key, windowMs) {
   const now = Date.now();
@@ -178,20 +225,53 @@ export function abuseGuard({ kind = "api" } = {}) {
       return res.status(403).json({ error: "访问已被临时限制，请稍后再试", retryAfter: retry });
     }
 
+    const passed = hasValidPass(req);
+    if (passed) clearSuspect(req);
+
+    // 已被标记为可疑但没有有效通行证 → 先做人机验证再放行
+    const suspect = isSuspect(req);
+    if (suspect && !passed) {
+      res.setHeader("X-Challenge-Required", "1");
+      audit("challenge-blocked", {
+        scope: suspect.scope,
+        value: suspect.value,
+        reason: suspect.reason,
+        ip,
+        userAgent: req.get("user-agent"),
+        userId: req.user?.sub || null,
+        path: req.originalUrl,
+      });
+      return res.status(428).json({
+        error: "检测到异常访问，请完成人机验证后重试",
+        challengeRequired: true,
+        challenge: issueChallenge(challengeSubject(req)),
+      });
+    }
+
     if (!ALLOW_IPS.has(ip)) {
+      const soft = (max) => Math.max(1, Math.floor(max * CFG.challengeRatio));
       const reqCount = bump(`req|${ip}`, 60_000);
       if (reqCount > CFG.reqPerMin) {
         banKey("ip", ip, `请求速率过高（${reqCount}/分钟）`, req, { count: reqCount });
+      } else if (!passed && reqCount > soft(CFG.reqPerMin)) {
+        markSuspect("ip", ip, `请求速率偏高（${reqCount}/分钟）`, req, { count: reqCount });
       }
       if (kind === "media") {
         const mediaCount = bump(`media|${ip}`, 60_000);
         if (mediaCount > CFG.mediaPerMin) {
           banKey("ip", ip, `媒体请求过多（${mediaCount}/分钟）`, req, { count: mediaCount });
+        } else if (!passed && mediaCount > soft(CFG.mediaPerMin)) {
+          markSuspect("ip", ip, `媒体请求偏多（${mediaCount}/分钟）`, req, { count: mediaCount });
         }
       }
       const uaCount = bump(`ua|${ua}`, 60_000);
       if (uaCount > CFG.uaReqPerMin) {
         banKey("ua", ua, `同一客户端指纹请求过多（${uaCount}/分钟）`, req, {
+          count: uaCount,
+          userAgent: req.get("user-agent"),
+        });
+      } else if (!passed && uaCount > soft(CFG.uaReqPerMin)) {
+        markSuspect("ua", ua, `同一客户端指纹请求偏多（${uaCount}/分钟）`, req, {
           count: uaCount,
           userAgent: req.get("user-agent"),
         });
@@ -204,6 +284,8 @@ export function abuseGuard({ kind = "api" } = {}) {
         const fails = bump(`authfail|${ip}`, 600_000);
         if (fails > CFG.authFailPer10Min) {
           banKey("ip", ip, `认证失败过多（${fails}/10分钟）`, req, { count: fails });
+        } else if (fails > Math.max(1, Math.floor(CFG.authFailPer10Min * CFG.challengeRatio))) {
+          markSuspect("ip", ip, `认证失败偏多（${fails}/10分钟）`, req, { count: fails });
         }
       }
     });
@@ -212,4 +294,15 @@ export function abuseGuard({ kind = "api" } = {}) {
   };
 }
 
-export const guardConfig = CFG;
+export const guardConfig = { ...CFG, challenge: CHALLENGE_CFG };
+
+/** 供管理端查看当前处于“待验证”状态的对象 */
+export function listSuspects() {
+  const now = Date.now();
+  return [...suspects.entries()]
+    .filter(([, v]) => v.until > now)
+    .map(([k, v]) => {
+      const i = k.indexOf(":");
+      return { scope: k.slice(0, i), value: k.slice(i + 1), reason: v.reason, until: v.until };
+    });
+}
