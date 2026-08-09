@@ -45,3 +45,38 @@ export function publicUrlFor(key) {
   if (COS_CDN_BASE) return `${COS_CDN_BASE.replace(/\/$/, "")}/${key}`;
   return `https://${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com/${key}`;
 }
+
+/** 从完整 URL 反推出 COS object key（兼容 CDN 自定义域名与默认 cos 域名） */
+export function keyFromUrl(url) {
+  if (!url) return null;
+  const u = String(url).trim();
+  if (!/^https?:\/\//i.test(u)) return u.replace(/^\/+/, "");
+  try {
+    const parsed = new URL(u);
+    const host = parsed.hostname;
+    const cosHost = `${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com`;
+    const cdnHost = COS_CDN_BASE ? new URL(COS_CDN_BASE).hostname : null;
+    if (host !== cosHost && host !== cdnHost) return null; // 非 COS 资源
+    return decodeURIComponent(parsed.pathname.replace(/^\/+/, ""));
+  } catch {
+    return null;
+  }
+}
+
+/** 生成带签名的临时播放地址（默认 2 小时有效） */
+export function presignGetUrl(key, expiresSec = 7200) {
+  const c = getCOS();
+  return new Promise((resolve, reject) => {
+    c.getObjectUrl(
+      {
+        Bucket: COS_BUCKET,
+        Region: COS_REGION,
+        Key: key,
+        Method: "GET",
+        Sign: true,
+        Expires: expiresSec,
+      },
+      (err, data) => (err ? reject(err) : resolve(data.Url)),
+    );
+  });
+}

@@ -118,3 +118,28 @@ export function playableUrl(url?: string | null): string | undefined {
   if (u.startsWith("/")) return `${BASE}${u}`;
   return u;
 }
+
+/**
+ * 私有播放地址：向后端换取有时效的签名 URL。
+ * 失败或非 COS 资源时回退到普通地址。
+ */
+const signedCache = new Map<string, { url: string; exp: number }>();
+export async function signedPlayUrl(url?: string | null): Promise<string | undefined> {
+  const base = playableUrl(url);
+  if (!base) return undefined;
+  const now = Date.now();
+  const hit = signedCache.get(base);
+  if (hit && hit.exp > now) return hit.url;
+  if (!getToken()) return base;
+  try {
+    const res = await api<{ url: string }>("/api/videos/sign-play", {
+      method: "POST",
+      body: { url: base },
+    });
+    const signed = playableUrl(res.url) || base;
+    signedCache.set(base, { url: signed, exp: now + 90 * 60 * 1000 });
+    return signed;
+  } catch {
+    return base;
+  }
+}

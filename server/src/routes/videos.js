@@ -3,7 +3,13 @@ import { z } from "zod";
 import { randomUUID } from "crypto";
 import { q } from "../db.js";
 import { requireAuth } from "../auth.js";
-import { presignPutUrl, publicUrlFor as cosPublicUrlFor, isConfigured as cosIsConfigured } from "../cos.js";
+import {
+  presignPutUrl,
+  presignGetUrl,
+  keyFromUrl,
+  publicUrlFor as cosPublicUrlFor,
+  isConfigured as cosIsConfigured,
+} from "../cos.js";
 import { publicUrlFor as localPublicUrlFor, uploaderFor } from "../uploads.js";
 
 const r = Router();
@@ -20,6 +26,23 @@ function resolvePublicUrl(key, req) {
 }
 
 // 1a) 获取 COS 上传预签名（仅 COS 配置时有效）
+
+// 0) 播放签名：把公开 URL 换成有时效的私有签名地址（防盗链/防批量下载）
+const SignPlayIn = z.object({ url: z.string().min(1) });
+r.post("/sign-play", requireAuth, async (req, res) => {
+  const p = SignPlayIn.safeParse(req.body);
+  if (!p.success) return res.status(400).json({ error: p.error.message });
+  if (!cosIsConfigured()) return res.json({ url: p.data.url });
+  const key = keyFromUrl(p.data.url);
+  if (!key) return res.json({ url: p.data.url }); // 非 COS 资源，原样返回
+  try {
+    const signed = await presignGetUrl(key, Number(process.env.COS_PLAY_EXPIRES || 7200));
+    res.json({ url: signed });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 r.post("/sign-upload", requireAuth, async (req, res) => {
   if (!cosIsConfigured()) return res.status(400).json({ error: "当前未启用 COS，请使用 /upload" });
   const p = SignIn.safeParse(req.body);
