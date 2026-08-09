@@ -208,3 +208,34 @@ CREATE TABLE IF NOT EXISTS account_deletions (
   email_hash text NOT NULL,
   deleted_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- ============ 滥用防护：自动封禁 + 审计日志 ============
+CREATE TABLE IF NOT EXISTS abuse_bans (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  scope      text NOT NULL,              -- 'ip' | 'ua'
+  value      text NOT NULL,              -- IP 或 UA 指纹
+  reason     text NOT NULL,
+  hits       integer NOT NULL DEFAULT 0,
+  strikes    integer NOT NULL DEFAULT 1, -- 第几次被封（用于时长升级）
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  released_at timestamptz,
+  released_by uuid REFERENCES users(id) ON DELETE SET NULL,
+  UNIQUE(scope, value, created_at)
+);
+CREATE INDEX IF NOT EXISTS abuse_bans_active_idx ON abuse_bans(scope, value, expires_at DESC);
+
+CREATE TABLE IF NOT EXISTS abuse_audit_logs (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  event      text NOT NULL,              -- 'ban' | 'blocked' | 'release' | 'threshold'
+  scope      text,
+  value      text,
+  reason     text,
+  ip         text,
+  user_agent text,
+  user_id    uuid REFERENCES users(id) ON DELETE SET NULL,
+  path       text,
+  detail     jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS abuse_audit_created_idx ON abuse_audit_logs(created_at DESC);
