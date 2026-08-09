@@ -225,20 +225,53 @@ export function abuseGuard({ kind = "api" } = {}) {
       return res.status(403).json({ error: "访问已被临时限制，请稍后再试", retryAfter: retry });
     }
 
+    const passed = hasValidPass(req);
+    if (passed) clearSuspect(req);
+
+    // 已被标记为可疑但没有有效通行证 → 先做人机验证再放行
+    const suspect = isSuspect(req);
+    if (suspect && !passed) {
+      res.setHeader("X-Challenge-Required", "1");
+      audit("challenge-blocked", {
+        scope: suspect.scope,
+        value: suspect.value,
+        reason: suspect.reason,
+        ip,
+        userAgent: req.get("user-agent"),
+        userId: req.user?.sub || null,
+        path: req.originalUrl,
+      });
+      return res.status(428).json({
+        error: "检测到异常访问，请完成人机验证后重试",
+        challengeRequired: true,
+        challenge: issueChallenge(challengeSubject(req)),
+      });
+    }
+
     if (!ALLOW_IPS.has(ip)) {
+      const soft = (max) => Math.max(1, Math.floor(max * CFG.challengeRatio));
       const reqCount = bump(`req|${ip}`, 60_000);
       if (reqCount > CFG.reqPerMin) {
         banKey("ip", ip, `请求速率过高（${reqCount}/分钟）`, req, { count: reqCount });
+      } else if (!passed && reqCount > soft(CFG.reqPerMin)) {
+        markSuspect("ip", ip, `请求速率偏高（${reqCount}/分钟）`, req, { count: reqCount });
       }
       if (kind === "media") {
         const mediaCount = bump(`media|${ip}`, 60_000);
         if (mediaCount > CFG.mediaPerMin) {
           banKey("ip", ip, `媒体请求过多（${mediaCount}/分钟）`, req, { count: mediaCount });
+        } else if (!passed && mediaCount > soft(CFG.mediaPerMin)) {
+          markSuspect("ip", ip, `媒体请求偏多（${mediaCount}/分钟）`, req, { count: mediaCount });
         }
       }
       const uaCount = bump(`ua|${ua}`, 60_000);
       if (uaCount > CFG.uaReqPerMin) {
         banKey("ua", ua, `同一客户端指纹请求过多（${uaCount}/分钟）`, req, {
+          count: uaCount,
+          userAgent: req.get("user-agent"),
+        });
+      } else if (!passed && uaCount > soft(CFG.uaReqPerMin)) {
+        markSuspect("ua", ua, `同一客户端指纹请求偏多（${uaCount}/分钟）`, req, {
           count: uaCount,
           userAgent: req.get("user-agent"),
         });
@@ -251,6 +284,8 @@ export function abuseGuard({ kind = "api" } = {}) {
         const fails = bump(`authfail|${ip}`, 600_000);
         if (fails > CFG.authFailPer10Min) {
           banKey("ip", ip, `认证失败过多（${fails}/10分钟）`, req, { count: fails });
+        } else if (fails > Math.max(1, Math.floor(CFG.authFailPer10Min * CFG.challengeRatio))) {
+          markSuspect("ip", ip, `认证失败偏多（${fails}/10分钟）`, req, { count: fails });
         }
       }
     });
@@ -259,4 +294,15 @@ export function abuseGuard({ kind = "api" } = {}) {
   };
 }
 
-export const guardConfig = CFG;
+export const guardConfig = { ...CFG, challenge: CHALLENGE_CFG };
+
+/** 供管理端查看当前处于“待验证”状态的对象 */
+export function listSuspects() {
+  const now = Date.now();
+  return [...suspects.entries()]
+    .filter(([, v]) => v.until > now)
+    .map(([k, v]) => {
+      const i = k.indexOf(":");
+      return { scope: k.slice(0, i), value: k.slice(i + 1), reason: v.reason, until: v.until };
+    });
+}
