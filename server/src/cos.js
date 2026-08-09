@@ -63,8 +63,8 @@ export function keyFromUrl(url) {
   }
 }
 
-/** 生成带签名的临时播放地址（默认 2 小时有效） */
-export function presignGetUrl(key, expiresSec = 7200) {
+/** 生成带签名的临时播放地址（默认 15 分钟有效，强制 inline 播放，禁止另存下载） */
+export function presignGetUrl(key, expiresSec = 900) {
   const c = getCOS();
   return new Promise((resolve, reject) => {
     c.getObjectUrl(
@@ -75,6 +75,10 @@ export function presignGetUrl(key, expiresSec = 7200) {
         Method: "GET",
         Sign: true,
         Expires: expiresSec,
+        Query: {
+          "response-content-disposition": "inline",
+          "response-cache-control": "private, max-age=600",
+        },
       },
       (err, data) => (err ? reject(err) : resolve(data.Url)),
     );
