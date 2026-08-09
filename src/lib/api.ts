@@ -1,4 +1,5 @@
 const BASE = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.replace(/\/$/, "") || "";
+import { getPass, solveChallenge } from "./challenge";
 
 const TOKEN_KEY = "chaonao.token";
 
@@ -28,18 +29,38 @@ export async function api<T = any>(
       0,
     );
   }
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  const tok = getToken();
-  if (tok) headers.Authorization = `Bearer ${tok}`;
-  const res = await fetch(`${BASE}${path}`, {
-    method: opts.method || "GET",
-    headers,
-    body: opts.body ? JSON.stringify(opts.body) : undefined,
-  });
-  const text = await res.text();
-  const data = text ? (() => { try { return JSON.parse(text); } catch { return text; } })() : null;
+  const send = async () => {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    const tok = getToken();
+    if (tok) headers.Authorization = `Bearer ${tok}`;
+    const pass = getPass();
+    if (pass) headers["x-abuse-pass"] = pass;
+    const res = await fetch(`${BASE}${path}`, {
+      method: opts.method || "GET",
+      headers,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    const text = await res.text();
+    const data = text
+      ? (() => {
+          try {
+            return JSON.parse(text);
+          } catch {
+            return text;
+          }
+        })()
+      : null;
+    return { res, data };
+  };
+
+  let { res, data } = await send();
+  // 428：命中疑似爬虫阈值，先自动完成人机验证再重试一次
+  if (res.status === 428 && data && (data as any).challengeRequired) {
+    await solveChallenge(BASE, (data as any).challenge);
+    ({ res, data } = await send());
+  }
   if (!res.ok) {
-    const msg = (data && (data.error || data.message)) || res.statusText;
+    const msg = (data && ((data as any).error || (data as any).message)) || res.statusText;
     throw new ApiError(msg, res.status);
   }
   return data as T;
