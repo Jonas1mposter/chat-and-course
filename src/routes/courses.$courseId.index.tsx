@@ -256,14 +256,7 @@ function CourseView({ course, canEdit }: { course: Course; canEdit: boolean }) {
             <div className="mt-8">
               <div className="overflow-hidden rounded-xl border border-border/60 bg-black">
                 {activeLesson.videoUrl ? (
-                  <video
-                    key={activeLesson.videoUrl}
-                    src={playableUrl(activeLesson.videoUrl)}
-                    controls
-                    playsInline
-                    preload="metadata"
-                    className="aspect-video w-full"
-                  />
+                  <LessonVideo key={activeLesson.videoUrl} url={activeLesson.videoUrl} />
                 ) : (
                   <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 text-muted-foreground">
                     <Lock className="h-8 w-8" />
