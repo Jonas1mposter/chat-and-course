@@ -15,6 +15,7 @@ import moderation from "./routes/moderation.js";
 import lessonComments from "./routes/lesson-comments.js";
 import { ensureUploadsDir, UPLOADS_DIR } from "./uploads.js";
 import { rateLimit } from "./ratelimit.js";
+import { abuseGuard, restoreBans } from "./guard.js";
 
 const app = express();
 app.set("trust proxy", true);
@@ -28,6 +29,7 @@ app.use(
 app.use(authOptional);
 
 ensureUploadsDir();
+restoreBans();
 
 // ---- 静态资源防护 & 流量优化 ----
 const ALLOWED_HOSTS = (process.env.CORS_ORIGIN || "")
@@ -67,6 +69,7 @@ const mediaLimiter = rateLimit({
 app.use(
   "/uploads",
   hotlinkGuard,
+  abuseGuard({ kind: "media" }),
   mediaLimiter,
   express.static(UPLOADS_DIR, {
     // 文件名带时间戳+UUID，内容不可变 → 长缓存，显著减少重复回源流量
@@ -92,6 +95,7 @@ app.use(
 // 全局 API 限流（按用户/IP）
 app.use(
   "/api",
+  abuseGuard({ kind: "api" }),
   rateLimit({
     windowMs: 60_000,
     max: Number(process.env.API_RATE_PER_MIN || 300),
