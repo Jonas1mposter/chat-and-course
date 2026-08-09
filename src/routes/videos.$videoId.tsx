@@ -59,7 +59,10 @@ function VideoDetail() {
           poster={playableUrl(v.coverUrl)}
           controls
           playsInline
-          preload="metadata"
+          preload="none"
+          controlsList="nodownload noplaybackrate noremoteplayback"
+          disablePictureInPicture
+          onContextMenu={(e) => e.preventDefault()}
           className="aspect-video w-full"
         />
       </div>
