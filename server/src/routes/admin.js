@@ -5,7 +5,7 @@ import { z } from "zod";
 import { q } from "../db.js";
 import { requireRole } from "../auth.js";
 import { logReset } from "./auth.js";
-import { releaseBan, guardConfig } from "../guard.js";
+import { releaseBan, guardConfig, listSuspects } from "../guard.js";
 
 const r = Router();
 
@@ -107,6 +107,9 @@ r.get("/password-reset-logs", requireRole("admin"), async (req, res) => {
 
 // ============ 滥用防护：封禁 & 审计日志 ============
 r.get("/abuse/config", requireRole("admin"), (_req, res) => res.json(guardConfig));
+
+// 当前处于「待人机验证」状态的 IP / UA
+r.get("/abuse/suspects", requireRole("admin"), (_req, res) => res.json(listSuspects()));
 
 r.get("/abuse/bans", requireRole("admin"), async (req, res) => {
   const limit = Math.min(Number(req.query.limit) || 100, 500);
