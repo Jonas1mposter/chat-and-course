@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { api, playableUrl } from "@/lib/api";
+import { api } from "@/lib/api";
 import { useSignedMedia } from "@/hooks/use-signed-media";
 
 function LessonVideo({ url }: { url?: string | null }) {
