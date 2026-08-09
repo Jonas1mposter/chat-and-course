@@ -8,7 +8,7 @@ import { createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypt
 const num = (v, d) => (Number.isFinite(Number(v)) ? Number(v) : d);
 
 export const CHALLENGE_CFG = {
-  difficulty: num(process.env.CHALLENGE_DIFFICULTY, 4), // 前导 0 的十六进制位数
+  difficulty: num(process.env.CHALLENGE_DIFFICULTY, 3), // 前导 0 的十六进制位数
   ttlMs: num(process.env.CHALLENGE_TTL_SEC, 300) * 1000, // 挑战有效期
   passMs: num(process.env.CHALLENGE_PASS_MINUTES, 30) * 60_000, // 通行证有效期
 };
