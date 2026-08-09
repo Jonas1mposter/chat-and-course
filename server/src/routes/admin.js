@@ -5,6 +5,7 @@ import { z } from "zod";
 import { q } from "../db.js";
 import { requireRole } from "../auth.js";
 import { logReset } from "./auth.js";
+import { releaseBan, guardConfig } from "../guard.js";
 
 const r = Router();
 
@@ -105,3 +106,40 @@ r.get("/password-reset-logs", requireRole("admin"), async (req, res) => {
 });
 
 export default r;
+
+// ============ 滥用防护：封禁 & 审计日志 ============
+r.get("/abuse/config", requireRole("admin"), (_req, res) => res.json(guardConfig));
+
+r.get("/abuse/bans", requireRole("admin"), async (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 100, 500);
+  const activeOnly = req.query.active !== "0";
+  const { rows } = await q(
+    `SELECT id, scope, value, reason, hits, strikes, expires_at, created_at, released_at
+       FROM abuse_bans
+      ${activeOnly ? "WHERE released_at IS NULL AND expires_at > now()" : ""}
+      ORDER BY created_at DESC LIMIT $1`,
+    [limit],
+  );
+  res.json(rows);
+});
+
+r.get("/abuse/logs", requireRole("admin"), async (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 200, 1000);
+  const event = typeof req.query.event === "string" ? req.query.event : null;
+  const { rows } = await q(
+    `SELECT id, event, scope, value, reason, ip, user_agent, path, detail, created_at
+       FROM abuse_audit_logs
+      ${event ? "WHERE event = $2" : ""}
+      ORDER BY created_at DESC LIMIT $1`,
+    event ? [limit, event] : [limit],
+  );
+  res.json(rows);
+});
+
+const UnbanIn = z.object({ scope: z.enum(["ip", "ua"]), value: z.string().min(1) });
+r.post("/abuse/unban", requireRole("admin"), async (req, res) => {
+  const p = UnbanIn.safeParse(req.body);
+  if (!p.success) return res.status(400).json({ error: p.error.message });
+  await releaseBan({ ...p.data, byUserId: req.user.sub });
+  res.json({ ok: true });
+});
