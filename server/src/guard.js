@@ -5,6 +5,7 @@
  */
 import { createHash } from "node:crypto";
 import { q } from "./db.js";
+import { issueChallenge, verifyPass, CHALLENGE_CFG } from "./challenge.js";
 
 const num = (v, d) => (Number.isFinite(Number(v)) ? Number(v) : d);
 
@@ -15,6 +16,8 @@ const CFG = {
   uaReqPerMin: num(process.env.BAN_UA_REQ_PER_MIN, 3000),  // 同一 UA 指纹（跨 IP 抓取）
   banMinutes: num(process.env.BAN_MINUTES, 60),            // 首次封禁时长
   banMaxMinutes: num(process.env.BAN_MAX_MINUTES, 1440),   // 升级上限
+  // 达到硬阈值的多少比例时先做人机验证（而不是直接封禁）
+  challengeRatio: Math.min(Math.max(num(process.env.CHALLENGE_RATIO, 0.5), 0.1), 0.95),
 };
 
 const ALLOW_IPS = new Set(
@@ -27,11 +30,14 @@ const windows = new Map();
 const bans = new Map();
 /** 已封禁过的次数，用于时长升级 */
 const strikes = new Map();
+/** 需要人机验证的对象：`${scope}:${value}` -> { until, reason } */
+const suspects = new Map();
 
 setInterval(() => {
   const now = Date.now();
   for (const [k, v] of windows) if (v.reset <= now) windows.delete(k);
   for (const [k, v] of bans) if (v.until <= now) bans.delete(k);
+  for (const [k, v] of suspects) if (v.until <= now) suspects.delete(k);
 }, 60_000).unref?.();
 
 export const clientIp = (req) =>
@@ -41,6 +47,47 @@ export const clientIp = (req) =>
 
 export const uaFingerprint = (req) =>
   createHash("sha1").update(req.get("user-agent") || "unknown").digest("hex").slice(0, 16);
+
+/** 通行证绑定的主体：IP + UA 指纹 */
+export const challengeSubject = (req) => `${clientIp(req)}|${uaFingerprint(req)}`;
+
+export const hasValidPass = (req) =>
+  verifyPass(req.get("x-abuse-pass") || req.query?.pass, challengeSubject(req));
+
+function markSuspect(scope, value, reason, req, detail) {
+  const key = `${scope}:${value}`;
+  const prev = suspects.get(key);
+  suspects.set(key, { until: Date.now() + CHALLENGE_CFG.passMs, reason });
+  if (!prev) {
+    audit("challenge", {
+      scope,
+      value,
+      reason,
+      ip: req ? clientIp(req) : null,
+      userAgent: req?.get?.("user-agent"),
+      userId: req?.user?.sub || null,
+      path: req?.originalUrl,
+      detail,
+    });
+  }
+}
+
+function isSuspect(req) {
+  const now = Date.now();
+  for (const [scope, value] of [
+    ["ip", clientIp(req)],
+    ["ua", uaFingerprint(req)],
+  ]) {
+    const s = suspects.get(`${scope}:${value}`);
+    if (s && s.until > now) return { scope, value, ...s };
+  }
+  return null;
+}
+
+export function clearSuspect(req) {
+  suspects.delete(`ip:${clientIp(req)}`);
+  suspects.delete(`ua:${uaFingerprint(req)}`);
+}
 
 function bump(key, windowMs) {
   const now = Date.now();
