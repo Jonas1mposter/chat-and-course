@@ -100,6 +100,12 @@ CREATE TABLE IF NOT EXISTS videos (
   created_at   timestamptz NOT NULL DEFAULT now()
 );
 ALTER TABLE videos ADD COLUMN IF NOT EXISTS cover_key text NOT NULL DEFAULT '';
+-- 审核：pending / approved / rejected
+ALTER TABLE videos ADD COLUMN IF NOT EXISTS status text NOT NULL DEFAULT 'approved';
+ALTER TABLE videos ADD COLUMN IF NOT EXISTS review_note text NOT NULL DEFAULT '';
+ALTER TABLE videos ADD COLUMN IF NOT EXISTS reviewed_at timestamptz;
+ALTER TABLE videos ADD COLUMN IF NOT EXISTS reviewed_by uuid REFERENCES users(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS videos_status_idx ON videos(status);
 CREATE INDEX IF NOT EXISTS videos_owner_idx ON videos(owner_id);
 
 CREATE TABLE IF NOT EXISTS video_likes (
