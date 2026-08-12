@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import { TierBadge, type TierKey } from "@/components/tier-badge";
+import { TitleBadge } from "@/components/title-badge";
 
 type Row = {
   id: string;
@@ -11,6 +12,7 @@ type Row = {
   points: number;
   tier: TierKey;
   tierName: string;
+  title?: string;
 };
 
 export const Route = createFileRoute("/leaderboard")({

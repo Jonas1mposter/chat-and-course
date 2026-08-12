@@ -1,5 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth";
+import { TitleBadge } from "@/components/title-badge";
+import { CheckinCard } from "@/components/checkin-card";
 import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import { TierBadge, type TierKey } from "@/components/tier-badge";
@@ -15,6 +20,20 @@ type Profile = {
   nextTier: string | null;
   nextMin: number | null;
   toNext: number;
+  title?: string;
+  streak: number;
+  checkedToday: boolean;
+  checkinTotal: number;
+  friends: number;
+  achievements: {
+    key: string;
+    name: string;
+    desc: string;
+    icon: string;
+    need: number;
+    progress: number;
+    unlocked: boolean;
+  }[];
   breakdown: {
     posts: number;
     replies: number;
@@ -41,9 +60,26 @@ export const Route = createFileRoute("/u/$userId")({
 
 function ProfilePage() {
   const { userId } = Route.useParams();
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const isSelf = user?.sub === userId;
   const { data: p, isLoading, error } = useQuery({
     queryKey: ["user", userId],
     queryFn: () => api<Profile>(`/api/users/${userId}`),
+  });
+
+  const setTitle = useMutation({
+    mutationFn: (key: string) => api("/api/social/title", { method: "POST", body: { key } }),
+    onSuccess: () => {
+      toast.success("称号已更新");
+      qc.invalidateQueries({ queryKey: ["user", userId] });
+    },
+    onError: (e) => toast.error((e as Error).message),
+  });
+  const addFriend = useMutation({
+    mutationFn: () => api("/api/social/request", { method: "POST", body: { userId } }),
+    onSuccess: (r: any) => toast.success(r?.status === "accepted" ? "已成为好友 🎉" : "好友申请已发送"),
+    onError: (e) => toast.error((e as Error).message),
   });
 
   if (isLoading) return <main className="mx-auto max-w-3xl px-6 py-24 text-center text-muted-foreground">加载中…</main>;
@@ -67,12 +103,25 @@ function ProfilePage() {
             <div className="flex items-center gap-2">
               <h1 className="truncate text-2xl font-semibold">{p.name}</h1>
               <TierBadge tier={p.tier} points={p.points} size="md" />
+              <TitleBadge titleKey={p.title} />
             </div>
             <p className="mt-1 text-sm text-muted-foreground">
               {p.role === "teacher" ? "讲师" : p.role === "admin" ? "管理员" : "学员"} · 加入于 {p.joinedAt}
+              {" · "}🔥 连续 {p.streak ?? 0} 天 · 👥 {p.friends ?? 0} 位好友
             </p>
           </div>
+          {user && !isSelf && (
+            <Button size="sm" variant="secondary" onClick={() => addFriend.mutate()} disabled={addFriend.isPending}>
+              加好友
+            </Button>
+          )}
         </div>
+
+        {isSelf && (
+          <div className="mt-6">
+            <CheckinCard />
+          </div>
+        )}
 
         <div className="mt-8">
           <div className="flex items-baseline justify-between">
@@ -106,9 +155,50 @@ function ProfilePage() {
           <Stat label="视频收赞" value={p.breakdown.videoLikes} unit="+3/赞" />
         </div>
 
+        <div className="mt-10">
+          <h2 className="mb-3 text-lg font-semibold">
+            成就 <span className="text-sm font-normal text-muted-foreground">
+              {p.achievements?.filter((a) => a.unlocked).length ?? 0}/{p.achievements?.length ?? 0}
+            </span>
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {p.achievements?.map((a) => (
+              <div
+                key={a.key}
+                className={`rounded-lg border p-3 transition-colors ${
+                  a.unlocked ? "border-primary/40 bg-primary/5" : "border-border/60 opacity-60"
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-lg" aria-hidden>{a.icon}</span>
+                  <span className="text-sm font-medium">{a.name}</span>
+                </div>
+                <div className="mt-1 text-[11px] text-muted-foreground">{a.desc}</div>
+                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className="h-full bg-primary"
+                    style={{ width: `${Math.min(100, (a.progress / a.need) * 100)}%` }}
+                  />
+                </div>
+                {isSelf && a.unlocked && (
+                  <button
+                    onClick={() => setTitle.mutate(p.title === a.key ? "" : a.key)}
+                    className="mt-2 text-[11px] text-primary hover:underline"
+                  >
+                    {p.title === a.key ? "取消佩戴" : "佩戴称号"}
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="mt-8 flex gap-3">
           <Link to="/leaderboard" className="text-sm text-primary hover:underline">
             查看排行榜 →
+          </Link>
+          <Link to="/friends" className="text-sm text-primary hover:underline">
+            好友与打卡 →
           </Link>
         </div>
       </Card>
