@@ -14,6 +14,7 @@ import admin from "./routes/admin.js";
 import moderation from "./routes/moderation.js";
 import lessonComments from "./routes/lesson-comments.js";
 import challenge from "./routes/challenge.js";
+import social from "./routes/social.js";
 import { ensureUploadsDir, UPLOADS_DIR } from "./uploads.js";
 import { rateLimit } from "./ratelimit.js";
 import { abuseGuard, restoreBans } from "./guard.js";
@@ -115,6 +116,7 @@ app.use("/api/videos", videos);
 app.use("/api/users", users);
 app.use("/api/admin", admin);
 app.use("/api/moderation", moderation);
+app.use("/api/social", social);
 
 app.use((err, _req, res, _next) => {
   console.error(err);
