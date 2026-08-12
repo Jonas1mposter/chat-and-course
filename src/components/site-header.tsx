@@ -51,6 +51,11 @@ export function SiteHeader() {
         <div className="ml-auto flex items-center gap-2">
           {loading ? null : user ? (
             <>
+              {user.role === "admin" && (
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/admin/videos">视频审核</Link>
+                </Button>
+              )}
               <span className="hidden sm:inline text-sm text-muted-foreground">
                 <Link to="/u/$userId" params={{ userId: user.sub }} className="hover:underline">
                   {user.name}

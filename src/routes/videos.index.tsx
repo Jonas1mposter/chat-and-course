@@ -17,6 +17,7 @@ type Video = {
   coverUrl: string;
   plays: number;
   likes: number;
+  status?: string;
   createdAt: string;
 };
 
@@ -86,6 +87,11 @@ function VideoCard({ v }: { v: Video }) {
     <Link to="/videos/$videoId" params={{ videoId: v.id }}>
       <Card className="group overflow-hidden border-border/60 p-0 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]">
         <div className="relative aspect-video w-full overflow-hidden bg-muted">
+          {v.status && v.status !== "approved" && (
+            <span className="absolute left-2 top-2 z-10 rounded-full bg-background/90 px-2 py-0.5 text-xs font-medium text-foreground shadow">
+              {v.status === "pending" ? "审核中" : "未通过"}
+            </span>
+          )}
           {cover ? (
             <img
               src={cover}

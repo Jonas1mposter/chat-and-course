@@ -2,7 +2,7 @@ import { Router } from "express";
 import { z } from "zod";
 import { randomUUID } from "crypto";
 import { q } from "../db.js";
-import { requireAuth } from "../auth.js";
+import { requireAuth, requireRole } from "../auth.js";
 import {
   presignPutUrl,
   presignGetUrl,
@@ -132,23 +132,66 @@ r.post("/", requireAuth, async (req, res) => {
   if (!p.success) return res.status(400).json({ error: p.error.message });
   const { title, description, cosKey, coverUrl, duration, sizeBytes } = p.data;
   const url = resolvePublicUrl(cosKey, req);
+  const status = req.user.role === "admin" ? "approved" : "pending";
   const { rows } = await q(
-    `INSERT INTO videos(owner_id,title,description,cos_key,url,cover_url,duration,size_bytes)
-     VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
-    [req.user.sub, title, description, cosKey, url, coverUrl, duration, sizeBytes],
+    `INSERT INTO videos(owner_id,title,description,cos_key,url,cover_url,duration,size_bytes,status)
+     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+    [req.user.sub, title, description, cosKey, url, coverUrl, duration, sizeBytes, status],
   );
-  res.json({ id: rows[0].id });
+  res.json({ id: rows[0].id, status });
+});
+
+// 3.5) 管理端：待审核列表 + 审核操作
+r.get("/admin/pending", requireRole("admin"), async (req, res) => {
+  const status = ["pending", "approved", "rejected"].includes(req.query.status)
+    ? req.query.status
+    : "pending";
+  const { rows } = await q(
+    `SELECT v.*, u.name AS author_name, 0 AS likes
+       FROM videos v JOIN users u ON u.id=v.owner_id
+      WHERE v.status = $1
+      ORDER BY v.created_at DESC LIMIT 200`,
+    [status],
+  );
+  res.json(rows.map(rowToVideo));
+});
+
+const ReviewIn = z.object({
+  action: z.enum(["approve", "reject"]),
+  note: z.string().max(500).optional().default(""),
+});
+r.post("/:id/review", requireRole("admin"), async (req, res) => {
+  const p = ReviewIn.safeParse(req.body);
+  if (!p.success) return res.status(400).json({ error: p.error.message });
+  const status = p.data.action === "approve" ? "approved" : "rejected";
+  const { rowCount } = await q(
+    `UPDATE videos SET status=$2, review_note=$3, reviewed_at=now(), reviewed_by=$4 WHERE id=$1`,
+    [req.params.id, status, p.data.note || "", req.user.sub],
+  );
+  if (!rowCount) return res.status(404).json({ error: "视频不存在" });
+  res.json({ ok: true, status });
 });
 
 // 4) 视频列表
 r.get("/", async (req, res) => {
   const ownerId = req.query.ownerId;
+  const me = req.user?.sub || null;
+  const isAdmin = req.user?.role === "admin";
   const params = [];
-  let where = "";
+  const conds = [];
   if (ownerId) {
     params.push(ownerId);
-    where = `WHERE v.owner_id = $${params.length}`;
+    conds.push(`v.owner_id = $${params.length}`);
   }
+  if (!isAdmin) {
+    if (me) {
+      params.push(me);
+      conds.push(`(v.status = 'approved' OR v.owner_id = $${params.length})`);
+    } else {
+      conds.push(`v.status = 'approved'`);
+    }
+  }
+  const where = conds.length ? `WHERE ${conds.join(" AND ")}` : "";
   const { rows } = await q(
     `SELECT v.*, u.name AS author_name,
        (SELECT count(*) FROM video_likes vl WHERE vl.video_id=v.id) AS likes
@@ -171,6 +214,9 @@ r.get("/:id", async (req, res) => {
     me ? [req.params.id, me] : [req.params.id],
   );
   if (!rows[0]) return res.status(404).json({ error: "视频不存在" });
+  const v0 = rows[0];
+  if (v0.status !== "approved" && req.user?.role !== "admin" && v0.owner_id !== me)
+    return res.status(404).json({ error: "视频不存在" });
   q("UPDATE videos SET plays=plays+1 WHERE id=$1", [req.params.id]).catch(() => {});
   res.json(rowToVideo(rows[0]));
 });
@@ -216,6 +262,8 @@ function rowToVideo(v) {
     coverUrl: v.cover_url,
     duration: v.duration,
     sizeBytes: Number(v.size_bytes ?? 0),
+    status: v.status || "approved",
+    reviewNote: v.review_note || "",
     plays: v.plays,
     likes: Number(v.likes ?? 0),
     liked: v.liked ?? false,
