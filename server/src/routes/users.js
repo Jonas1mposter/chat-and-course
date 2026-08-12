@@ -14,6 +14,7 @@ r.get("/leaderboard", async (_req, res) => {
   const { rows } = await q(
     `SELECT id, name, role, title, user_points(id) AS points
        FROM users
+      WHERE role <> 'admin'
       ORDER BY points DESC, created_at ASC
       LIMIT 50`,
   );
