@@ -1,5 +1,5 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { BookOpen, MessageSquare, Home, Sparkles, Video, Trophy } from "lucide-react";
+import { BookOpen, MessageSquare, Home, Sparkles, Video, Trophy, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -10,6 +10,7 @@ const navItems = [
   { to: "/discussions", label: "讨论区", icon: MessageSquare },
   { to: "/videos", label: "视频", icon: Video },
   { to: "/leaderboard", label: "排行榜", icon: Trophy },
+  { to: "/friends", label: "好友", icon: Users },
 ] as const;
 
 export function SiteHeader() {
