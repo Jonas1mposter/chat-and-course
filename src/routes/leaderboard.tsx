@@ -73,6 +73,7 @@ function LeaderboardPage() {
               <div className="flex items-center gap-2">
                 <span className="truncate font-medium">{u.name}</span>
                 <TierBadge tier={u.tier} points={u.points} />
+                <TitleBadge titleKey={u.title} />
               </div>
               <p className="mt-0.5 text-xs text-muted-foreground">{u.role}</p>
             </div>
