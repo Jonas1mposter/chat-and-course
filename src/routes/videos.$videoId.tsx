@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Heart, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { api, playableUrl } from "@/lib/api";
+import { api } from "@/lib/api";
 import { useSignedMedia } from "@/hooks/use-signed-media";
 import { useAuth } from "@/lib/auth";
 
@@ -39,6 +39,7 @@ function VideoDetail() {
     queryFn: () => api<Video>(`/api/videos/${videoId}`),
   });
   const videoSrc = useSignedMedia(v?.url);
+  const posterSrc = useSignedMedia(v?.coverUrl);
   const like = useMutation({
     mutationFn: () => api(`/api/videos/${videoId}/like`, { method: "POST" }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["video", videoId] }),
@@ -56,7 +57,7 @@ function VideoDetail() {
       <div className="mt-6 overflow-hidden rounded-xl bg-black">
         <video
           src={videoSrc}
-          poster={playableUrl(v.coverUrl)}
+          poster={posterSrc}
           controls
           playsInline
           preload="none"
