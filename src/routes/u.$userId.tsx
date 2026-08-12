@@ -20,6 +20,10 @@ type Profile = {
     replies: number;
     videos: number;
     lessons: number;
+    enrollments: number;
+    lessonComments: number;
+    questions: number;
+    replyLikes: number;
     postLikes: number;
     videoLikes: number;
   };
@@ -90,12 +94,16 @@ function ProfilePage() {
         </div>
 
         <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
-          <Stat label="发帖" value={p.breakdown.posts} unit="+5/篇" />
-          <Stat label="评论" value={p.breakdown.replies} unit="+2/条" />
-          <Stat label="上传视频" value={p.breakdown.videos} unit="+10/个" />
-          <Stat label="完成课时" value={p.breakdown.lessons} unit="+3/节" />
-          <Stat label="帖子收赞" value={p.breakdown.postLikes} unit="+1/赞" />
-          <Stat label="视频收赞" value={p.breakdown.videoLikes} unit="+2/赞" />
+          <Stat label="发帖" value={p.breakdown.posts} unit="+10/篇" />
+          <Stat label="回帖" value={p.breakdown.replies} unit="+3/条" />
+          <Stat label="课时评论" value={p.breakdown.lessonComments ?? 0} unit="+3/条" />
+          <Stat label="课堂出题" value={p.breakdown.questions ?? 0} unit="+8/题" />
+          <Stat label="上传视频" value={p.breakdown.videos} unit="+15/个" />
+          <Stat label="完成课时" value={p.breakdown.lessons} unit="+5/节" />
+          <Stat label="报名课程" value={p.breakdown.enrollments ?? 0} unit="+5/门" />
+          <Stat label="帖子收赞" value={p.breakdown.postLikes} unit="+2/赞" />
+          <Stat label="回帖收赞" value={p.breakdown.replyLikes ?? 0} unit="+2/赞" />
+          <Stat label="视频收赞" value={p.breakdown.videoLikes} unit="+3/赞" />
         </div>
 
         <div className="mt-8 flex gap-3">

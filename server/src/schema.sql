@@ -133,21 +133,30 @@ CREATE INDEX IF NOT EXISTS lesson_comments_lesson_idx
   ON lesson_comments(course_id, lesson_idx, created_at);
 
 -- ============ 积分函数 ============
--- 发帖+5  评论+2  收到帖子赞+1  上传视频+10  收到视频赞+2  完成一节课+3
+-- 发帖+10 回复+3 课时评论+3 讲师出题+8 上传视频+15 完成一节课+5
+-- 报名课程+5 帖子收赞+2 视频收赞+3 回复收赞+2
 CREATE OR REPLACE FUNCTION user_points(uid uuid) RETURNS int
 LANGUAGE sql STABLE AS $$
   SELECT COALESCE((
-    SELECT 5  * COUNT(*) FROM posts   WHERE author_id = uid
+    SELECT 10 * COUNT(*) FROM posts   WHERE author_id = uid
   ),0) + COALESCE((
-    SELECT 2  * COUNT(*) FROM replies WHERE author_id = uid
+    SELECT 3  * COUNT(*) FROM replies WHERE author_id = uid
   ),0) + COALESCE((
-    SELECT 1  * COUNT(*) FROM post_likes  pl JOIN posts  p ON p.id=pl.post_id  WHERE p.author_id = uid
+    SELECT 2  * COUNT(*) FROM post_likes  pl JOIN posts  p ON p.id=pl.post_id  WHERE p.author_id = uid
   ),0) + COALESCE((
-    SELECT 10 * COUNT(*) FROM videos WHERE owner_id  = uid
+    SELECT 15 * COUNT(*) FROM videos WHERE owner_id  = uid
   ),0) + COALESCE((
-    SELECT 2  * COUNT(*) FROM video_likes vl JOIN videos v ON v.id=vl.video_id WHERE v.owner_id  = uid
+    SELECT 3  * COUNT(*) FROM video_likes vl JOIN videos v ON v.id=vl.video_id WHERE v.owner_id  = uid
   ),0) + COALESCE((
-    SELECT 3  * COUNT(*) FROM lesson_progress WHERE user_id = uid
+    SELECT 5  * COUNT(*) FROM lesson_progress WHERE user_id = uid
+  ),0) + COALESCE((
+    SELECT 5  * COUNT(*) FROM course_enrollments WHERE user_id = uid
+  ),0) + COALESCE((
+    SELECT 3  * COUNT(*) FROM lesson_comments WHERE author_id = uid AND kind <> 'question'
+  ),0) + COALESCE((
+    SELECT 8  * COUNT(*) FROM lesson_comments WHERE author_id = uid AND kind = 'question'
+  ),0) + COALESCE((
+    SELECT 2  * SUM(GREATEST(likes,0)) FROM replies WHERE author_id = uid
   ),0);
 $$;
 -- ============ 密码重置 ============
