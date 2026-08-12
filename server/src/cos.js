@@ -1,4 +1,5 @@
 import COS from "cos-nodejs-sdk-v5";
+import { createReadStream, statSync, unlink } from "fs";
 
 const {
   COS_SECRET_ID,
@@ -44,6 +45,29 @@ export function presignPutUrl(key, expiresSec = 600) {
 export function publicUrlFor(key) {
   if (COS_CDN_BASE) return `${COS_CDN_BASE.replace(/\/$/, "")}/${key}`;
   return `https://${COS_BUCKET}.cos.${COS_REGION}.myqcloud.com/${key}`;
+}
+
+/** 服务器把本地临时文件推送到 COS，成功后删除本地文件 */
+export function uploadLocalFile(localPath, key, contentType) {
+  const c = getCOS();
+  const size = statSync(localPath).size;
+  return new Promise((resolve, reject) => {
+    c.putObject(
+      {
+        Bucket: COS_BUCKET,
+        Region: COS_REGION,
+        Key: key,
+        Body: createReadStream(localPath),
+        ContentLength: size,
+        ContentType: contentType || "application/octet-stream",
+      },
+      (err) => {
+        if (err) return reject(err);
+        unlink(localPath, () => {});
+        resolve({ key, url: publicUrlFor(key), sizeBytes: size });
+      },
+    );
+  });
 }
 
 /** 从完整 URL 反推出 COS object key（兼容 CDN 自定义域名与默认 cos 域名） */
