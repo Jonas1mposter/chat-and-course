@@ -59,6 +59,16 @@ function AdminVideosPage() {
     onError: (e) => toast.error((e as Error).message),
   });
 
+  const remove = useMutation({
+    mutationFn: (id: string) => api(`/api/videos/${id}`, { method: "DELETE" }),
+    onSuccess: () => {
+      toast.success("已删除");
+      qc.invalidateQueries({ queryKey: ["admin-videos"] });
+      qc.invalidateQueries({ queryKey: ["videos"] });
+    },
+    onError: (e) => toast.error((e as Error).message),
+  });
+
   if (user?.role !== "admin")
     return (
       <main className="mx-auto max-w-md px-6 py-24 text-center text-muted-foreground">
@@ -115,6 +125,16 @@ function AdminVideosPage() {
                   拒绝
                 </Button>
               )}
+              <Button
+                size="sm"
+                variant="destructive"
+                disabled={remove.isPending}
+                onClick={() => {
+                  if (confirm(`确定删除「${v.title}」？`)) remove.mutate(v.id);
+                }}
+              >
+                删除
+              </Button>
             </div>
           </Card>
         ))}
