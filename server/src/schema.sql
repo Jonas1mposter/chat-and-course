@@ -248,3 +248,58 @@ CREATE TABLE IF NOT EXISTS abuse_audit_logs (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS abuse_audit_created_idx ON abuse_audit_logs(created_at DESC);
+
+-- ============ 社交：好友 ============
+CREATE TABLE IF NOT EXISTS friendships (
+  a          uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  b          uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  status     text NOT NULL DEFAULT 'pending',   -- 'pending' | 'accepted'
+  requester  uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  accepted_at timestamptz,
+  PRIMARY KEY (a, b),
+  CHECK (a < b)
+);
+CREATE INDEX IF NOT EXISTS friendships_a_idx ON friendships(a, status);
+CREATE INDEX IF NOT EXISTS friendships_b_idx ON friendships(b, status);
+
+-- ============ 游戏化：每日打卡 / 称号 ============
+CREATE TABLE IF NOT EXISTS daily_checkins (
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  day     date NOT NULL DEFAULT (now() AT TIME ZONE 'Asia/Shanghai')::date,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, day)
+);
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS title text NOT NULL DEFAULT '';
+
+-- 积分：每日打卡 +2，成为好友 +3（双方）
+CREATE OR REPLACE FUNCTION user_points(uid uuid) RETURNS int
+LANGUAGE sql STABLE AS $$
+  SELECT COALESCE((
+    SELECT 10 * COUNT(*) FROM posts   WHERE author_id = uid
+  ),0) + COALESCE((
+    SELECT 3  * COUNT(*) FROM replies WHERE author_id = uid
+  ),0) + COALESCE((
+    SELECT 2  * COUNT(*) FROM post_likes  pl JOIN posts  p ON p.id=pl.post_id  WHERE p.author_id = uid
+  ),0) + COALESCE((
+    SELECT 15 * COUNT(*) FROM videos WHERE owner_id  = uid
+  ),0) + COALESCE((
+    SELECT 3  * COUNT(*) FROM video_likes vl JOIN videos v ON v.id=vl.video_id WHERE v.owner_id  = uid
+  ),0) + COALESCE((
+    SELECT 5  * COUNT(*) FROM lesson_progress WHERE user_id = uid
+  ),0) + COALESCE((
+    SELECT 5  * COUNT(*) FROM course_enrollments WHERE user_id = uid
+  ),0) + COALESCE((
+    SELECT 3  * COUNT(*) FROM lesson_comments WHERE author_id = uid AND kind <> 'question'
+  ),0) + COALESCE((
+    SELECT 8  * COUNT(*) FROM lesson_comments WHERE author_id = uid AND kind = 'question'
+  ),0) + COALESCE((
+    SELECT 2  * SUM(GREATEST(likes,0)) FROM replies WHERE author_id = uid
+  ),0) + COALESCE((
+    SELECT 2  * COUNT(*) FROM daily_checkins WHERE user_id = uid
+  ),0) + COALESCE((
+    SELECT 3  * COUNT(*) FROM friendships
+     WHERE status='accepted' AND (a = uid OR b = uid)
+  ),0);
+$$;

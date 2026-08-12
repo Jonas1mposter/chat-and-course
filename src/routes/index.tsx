@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { api } from "@/lib/api";
 import type { Course, Post } from "@/lib/mock-data";
 import { CourseEmoji } from "@/components/course-emoji";
+import { CheckinCard } from "@/components/checkin-card";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -118,6 +119,10 @@ function Index() {
       </section>
 
       {/* Featured courses */}
+      <div className="mx-auto max-w-6xl px-6">
+        <CheckinCard />
+      </div>
+
       <section className="mx-auto max-w-6xl px-6 py-20">
         <div className="flex items-end justify-between">
           <div>

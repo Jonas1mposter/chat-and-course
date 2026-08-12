@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api";
 import { TierBadge, type TierKey } from "@/components/tier-badge";
+import { TitleBadge } from "@/components/title-badge";
 
 type Row = {
   id: string;
@@ -11,6 +12,7 @@ type Row = {
   points: number;
   tier: TierKey;
   tierName: string;
+  title?: string;
 };
 
 export const Route = createFileRoute("/leaderboard")({
@@ -71,6 +73,7 @@ function LeaderboardPage() {
               <div className="flex items-center gap-2">
                 <span className="truncate font-medium">{u.name}</span>
                 <TierBadge tier={u.tier} points={u.points} />
+                <TitleBadge titleKey={u.title} />
               </div>
               <p className="mt-0.5 text-xs text-muted-foreground">{u.role}</p>
             </div>

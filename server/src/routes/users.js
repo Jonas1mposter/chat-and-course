@@ -4,13 +4,15 @@ import crypto from "crypto";
 import { q } from "../db.js";
 import { tierOf } from "../tier.js";
 import { requireAuth } from "../auth.js";
+import { evaluate } from "../gamify.js";
+import { streakOf, friendCount } from "../social.js";
 
 const r = Router();
 
 // 排行榜
 r.get("/leaderboard", async (_req, res) => {
   const { rows } = await q(
-    `SELECT id, name, role, user_points(id) AS points
+    `SELECT id, name, role, title, user_points(id) AS points
        FROM users
       ORDER BY points DESC, created_at ASC
       LIMIT 50`,
@@ -20,6 +22,7 @@ r.get("/leaderboard", async (_req, res) => {
       id: u.id,
       name: u.name,
       role: u.role,
+      title: u.title || "",
       ...tierOf(u.points),
     })),
   );
@@ -52,7 +55,7 @@ r.delete("/me", requireAuth, async (req, res) => {
 
 // 任意用户的公开统计
 r.get("/:id", async (req, res) => {
-  const u = await q("SELECT id,name,role,created_at FROM users WHERE id=$1", [
+  const u = await q("SELECT id,name,role,title,created_at FROM users WHERE id=$1", [
     req.params.id,
   ]);
   if (!u.rowCount) return res.status(404).json({ error: "用户不存在" });
@@ -61,6 +64,7 @@ r.get("/:id", async (req, res) => {
     id: u.rows[0].id,
     name: u.rows[0].name,
     role: u.rows[0].role,
+    title: u.rows[0].title || "",
     joinedAt: new Date(u.rows[0].created_at).toLocaleDateString("zh-CN"),
     ...s,
   });
@@ -83,9 +87,9 @@ async function statsFor(uid) {
         (SELECT count(*) FROM video_likes vl JOIN videos v ON v.id=vl.video_id WHERE v.owner_id=$1)  AS video_likes`,
     [uid],
   );
-  return {
-    ...tierOf(pts),
-    breakdown: {
+  const streak = await streakOf(uid);
+  const friends = await friendCount(uid);
+  const b = {
       posts: Number(counts.rows[0].posts),
       replies: Number(counts.rows[0].replies),
       videos: Number(counts.rows[0].videos),
@@ -96,7 +100,22 @@ async function statsFor(uid) {
       replyLikes: Number(counts.rows[0].reply_likes),
       postLikes: Number(counts.rows[0].post_likes),
       videoLikes: Number(counts.rows[0].video_likes),
-    },
+  };
+  const achievements = evaluate({
+    ...b,
+    likes: b.replyLikes + b.postLikes + b.videoLikes,
+    streak: streak.streak,
+    friends,
+    points: pts,
+  });
+  return {
+    ...tierOf(pts),
+    streak: streak.streak,
+    checkedToday: streak.checkedToday,
+    checkinTotal: streak.total,
+    friends,
+    achievements,
+    breakdown: b,
   };
 }
 
