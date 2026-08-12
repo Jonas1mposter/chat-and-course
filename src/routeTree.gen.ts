@@ -28,6 +28,7 @@ import { Route as DiscussionsNewRouteImport } from './routes/discussions.new'
 import { Route as DiscussionsPostIdRouteImport } from './routes/discussions.$postId'
 import { Route as CoursesNewRouteImport } from './routes/courses.new'
 import { Route as CoursesCourseIdRouteImport } from './routes/courses.$courseId'
+import { Route as AdminVideosRouteImport } from './routes/admin.videos'
 import { Route as AdminSetupRouteImport } from './routes/admin.setup'
 import { Route as AdminPasswordsRouteImport } from './routes/admin.passwords'
 import { Route as CoursesCourseIdIndexRouteImport } from './routes/courses.$courseId.index'
@@ -128,6 +129,11 @@ const CoursesCourseIdRoute = CoursesCourseIdRouteImport.update({
   path: '/courses/$courseId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminVideosRoute = AdminVideosRouteImport.update({
+  id: '/admin/videos',
+  path: '/admin/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminSetupRoute = AdminSetupRouteImport.update({
   id: '/admin/setup',
   path: '/admin/setup',
@@ -161,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin/passwords': typeof AdminPasswordsRoute
   '/admin/setup': typeof AdminSetupRoute
+  '/admin/videos': typeof AdminVideosRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin/passwords': typeof AdminPasswordsRoute
   '/admin/setup': typeof AdminSetupRoute
+  '/admin/videos': typeof AdminVideosRoute
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
   '/discussions/new': typeof DiscussionsNewRoute
@@ -211,6 +219,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/admin/passwords': typeof AdminPasswordsRoute
   '/admin/setup': typeof AdminSetupRoute
+  '/admin/videos': typeof AdminVideosRoute
   '/courses/$courseId': typeof CoursesCourseIdRouteWithChildren
   '/courses/new': typeof CoursesNewRoute
   '/discussions/$postId': typeof DiscussionsPostIdRoute
@@ -238,6 +247,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/passwords'
     | '/admin/setup'
+    | '/admin/videos'
     | '/courses/$courseId'
     | '/courses/new'
     | '/discussions/$postId'
@@ -263,6 +273,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/passwords'
     | '/admin/setup'
+    | '/admin/videos'
     | '/courses/new'
     | '/discussions/$postId'
     | '/discussions/new'
@@ -287,6 +298,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin/passwords'
     | '/admin/setup'
+    | '/admin/videos'
     | '/courses/$courseId'
     | '/courses/new'
     | '/discussions/$postId'
@@ -313,6 +325,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   AdminPasswordsRoute: typeof AdminPasswordsRoute
   AdminSetupRoute: typeof AdminSetupRoute
+  AdminVideosRoute: typeof AdminVideosRoute
   CoursesCourseIdRoute: typeof CoursesCourseIdRouteWithChildren
   CoursesNewRoute: typeof CoursesNewRoute
   DiscussionsPostIdRoute: typeof DiscussionsPostIdRoute
@@ -460,6 +473,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoursesCourseIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/videos': {
+      id: '/admin/videos'
+      path: '/admin/videos'
+      fullPath: '/admin/videos'
+      preLoaderRoute: typeof AdminVideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/setup': {
       id: '/admin/setup'
       path: '/admin/setup'
@@ -517,6 +537,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   AdminPasswordsRoute: AdminPasswordsRoute,
   AdminSetupRoute: AdminSetupRoute,
+  AdminVideosRoute: AdminVideosRoute,
   CoursesCourseIdRoute: CoursesCourseIdRouteWithChildren,
   CoursesNewRoute: CoursesNewRoute,
   DiscussionsPostIdRoute: DiscussionsPostIdRoute,

@@ -88,7 +88,7 @@ function NewVideoPage() {
       </Link>
       <h1 className="mt-4 text-3xl font-semibold tracking-tight">上传视频</h1>
       <p className="mt-2 text-sm text-muted-foreground">
-        视频将上传到服务器本地存储（无需 COS 存储桶），服务器会自动提供播放地址。
+        视频上传后需管理员审核通过，才会出现在视频墙（你可以在视频墙看到自己「审核中」的作品）。
       </p>
 
       <Card className="mt-6 space-y-4 p-6">
