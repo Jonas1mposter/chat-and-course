@@ -115,18 +115,7 @@ async function statsFor(uid) {
     checkinTotal: streak.total,
     friends,
     achievements,
-    breakdown: {
-      posts: Number(counts.rows[0].posts),
-      replies: Number(counts.rows[0].replies),
-      videos: Number(counts.rows[0].videos),
-      lessons: Number(counts.rows[0].lessons),
-      enrollments: Number(counts.rows[0].enrollments),
-      lessonComments: Number(counts.rows[0].lesson_comments),
-      questions: Number(counts.rows[0].questions),
-      replyLikes: Number(counts.rows[0].reply_likes),
-      postLikes: Number(counts.rows[0].post_likes),
-      videoLikes: Number(counts.rows[0].video_likes),
-    },
+    breakdown: b,
   };
 }
 
