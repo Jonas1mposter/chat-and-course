@@ -9,6 +9,7 @@ import {
   keyFromUrl,
   publicUrlFor as cosPublicUrlFor,
   isConfigured as cosIsConfigured,
+  uploadLocalFile,
 } from "../cos.js";
 import { publicUrlFor as localPublicUrlFor, uploaderFor } from "../uploads.js";
 import { rateLimit } from "../ratelimit.js";
@@ -24,6 +25,21 @@ const SignIn = z.object({
 function resolvePublicUrl(key, req) {
   if (cosIsConfigured()) return cosPublicUrlFor(key);
   return localPublicUrlFor(key, req);
+}
+
+/**
+ * 服务器收到文件后：COS 已配置就转存到 COS（避免本地地址与 COS 地址不一致导致 404），
+ * 否则保留本地存储。
+ */
+async function storeUploaded(req, subfolder) {
+  const f = req.file;
+  const key = `${subfolder}/${f.filename}`;
+  if (!cosIsConfigured()) {
+    return { key, publicUrl: localPublicUrlFor(key, req), sizeBytes: f.size };
+  }
+  const cosKey = `${subfolder}/${req.user.sub}/${f.filename}`;
+  await uploadLocalFile(f.path, cosKey, f.mimetype);
+  return { key: cosKey, publicUrl: cosPublicUrlFor(cosKey), sizeBytes: f.size };
 }
 
 // 1a) 获取 COS 上传预签名（仅 COS 配置时有效）
@@ -69,8 +85,11 @@ r.post("/sign-upload", requireAuth, async (req, res) => {
 // 1b) 本地服务器接收视频文件（无 COS 时的默认方案）
 r.post("/upload", requireAuth, uploaderFor("videos").single("file"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "没有收到文件" });
-  const key = `videos/${req.file.filename}`;
-  res.json({ key, publicUrl: localPublicUrlFor(key, req), sizeBytes: req.file.size });
+  try {
+    res.json(await storeUploaded(req, "videos"));
+  } catch (e) {
+    res.status(500).json({ error: `转存到云存储失败：${e.message}` });
+  }
 });
 
 // 2a) 获取 COS 封面上传预签名
@@ -91,8 +110,11 @@ r.post("/sign-upload-cover", requireAuth, async (req, res) => {
 // 2b) 本地服务器接收封面文件
 r.post("/upload-cover", requireAuth, uploaderFor("covers").single("file"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "没有收到文件" });
-  const key = `covers/${req.file.filename}`;
-  res.json({ key, publicUrl: localPublicUrlFor(key, req) });
+  try {
+    res.json(await storeUploaded(req, "covers"));
+  } catch (e) {
+    res.status(500).json({ error: `转存到云存储失败：${e.message}` });
+  }
 });
 
 // 3a) 获取 COS 附件上传预签名（pdf/doc/ppt/md 等任意文件）
@@ -113,8 +135,11 @@ r.post("/sign-upload-file", requireAuth, async (req, res) => {
 // 3b) 本地服务器接收附件
 r.post("/upload-file", requireAuth, uploaderFor("files").single("file"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "没有收到文件" });
-  const key = `files/${req.file.filename}`;
-  res.json({ key, publicUrl: localPublicUrlFor(key, req), sizeBytes: req.file.size });
+  try {
+    res.json(await storeUploaded(req, "files"));
+  } catch (e) {
+    res.status(500).json({ error: `转存到云存储失败：${e.message}` });
+  }
 });
 
 const CreateIn = z.object({
