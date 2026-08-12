@@ -4,6 +4,7 @@ import { Play, Heart, Plus, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { api } from "@/lib/api";
+import { useSignedMedia } from "@/hooks/use-signed-media";
 import { useAuth } from "@/lib/auth";
 
 type Video = {
@@ -72,37 +73,45 @@ function VideosPage() {
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {videos.map((v) => (
-          <Link key={v.id} to="/videos/$videoId" params={{ videoId: v.id }}>
-            <Card className="group overflow-hidden border-border/60 p-0 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]">
-              <div className="relative aspect-video w-full overflow-hidden bg-muted">
-                {v.coverUrl ? (
-                  <img
-                    src={v.coverUrl}
-                    alt={v.title}
-                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="grid h-full place-items-center text-muted-foreground">
-                    <Play className="h-10 w-10" />
-                  </div>
-                )}
-              </div>
-              <div className="p-4">
-                <h3 className="line-clamp-2 font-medium leading-snug">{v.title}</h3>
-                <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-                  <span>{v.author}</span>
-                  <span className="flex items-center gap-1">
-                    <Eye className="h-3.5 w-3.5" /> {v.plays}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Heart className="h-3.5 w-3.5" /> {v.likes}
-                  </span>
-                </div>
-              </div>
-            </Card>
-          </Link>
+          <VideoCard key={v.id} v={v} />
         ))}
       </div>
     </main>
+  );
+}
+
+function VideoCard({ v }: { v: Video }) {
+  const cover = useSignedMedia(v.coverUrl);
+  return (
+    <Link to="/videos/$videoId" params={{ videoId: v.id }}>
+      <Card className="group overflow-hidden border-border/60 p-0 transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-soft)]">
+        <div className="relative aspect-video w-full overflow-hidden bg-muted">
+          {cover ? (
+            <img
+              src={cover}
+              alt={v.title}
+              loading="lazy"
+              className="h-full w-full object-cover transition-transform group-hover:scale-105"
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-muted-foreground">
+              <Play className="h-10 w-10" />
+            </div>
+          )}
+        </div>
+        <div className="p-4">
+          <h3 className="line-clamp-2 font-medium leading-snug">{v.title}</h3>
+          <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+            <span>{v.author}</span>
+            <span className="flex items-center gap-1">
+              <Eye className="h-3.5 w-3.5" /> {v.plays}
+            </span>
+            <span className="flex items-center gap-1">
+              <Heart className="h-3.5 w-3.5" /> {v.likes}
+            </span>
+          </div>
+        </div>
+      </Card>
+    </Link>
   );
 }
