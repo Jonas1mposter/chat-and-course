@@ -28,12 +28,17 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [role, setRole] = useState<"student" | "teacher">("student");
+  const [agreed, setAgreed] = useState(false);
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr("");
+    if (!agreed) {
+      setErr("请先阅读并同意《用户协议与社区规范》和《隐私政策》");
+      return;
+    }
     setBusy(true);
     try {
       if (mode === "login") await login(email, password);
@@ -107,7 +112,27 @@ function AuthPage() {
             </div>
           )}
           {err && <p className="text-sm text-destructive">{err}</p>}
-          <Button type="submit" className="w-full" disabled={busy}>
+          <label className="flex items-start gap-2 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 accent-[hsl(var(--primary))]"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+            />
+            <span>
+              我已阅读并同意{" "}
+              <Link to="/terms" className="text-primary hover:underline">
+                《用户协议与社区规范》(EULA)
+              </Link>{" "}
+              和{" "}
+              <Link to="/privacy" className="text-primary hover:underline">
+                《隐私政策》
+              </Link>
+              ，理解平台对色情、辱骂、骚扰等令人反感的内容与滥用用户零容忍，违规内容将在 24
+              小时内删除并封禁发布者。
+            </span>
+          </label>
+          <Button type="submit" className="w-full" disabled={busy || !agreed}>
             {busy ? "提交中…" : mode === "login" ? "登录" : "注册并登录"}
           </Button>
           {mode === "login" && (
