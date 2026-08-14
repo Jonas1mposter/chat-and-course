@@ -99,14 +99,14 @@ ON CONFLICT DO NOTHING;
 -- 8) 校验
 SELECT
   (SELECT count(*) FROM course_enrollments ce JOIN users u ON u.id = ce.user_id
-     WHERE u.email = 'demo@superbrain-studio.cn') AS 已加入课程,
+     WHERE u.email = 'demo@superbrain-studio.cn') AS "已加入课程",
   (SELECT count(*) FROM lesson_progress lp JOIN users u ON u.id = lp.user_id
-     WHERE u.email = 'demo@superbrain-studio.cn') AS 已完成课时,
+     WHERE u.email = 'demo@superbrain-studio.cn') AS "已完成课时",
   (SELECT count(*) FROM posts p JOIN users u ON u.id = p.author_id
-     WHERE u.email = 'demo@superbrain-studio.cn') AS 发帖数,
+     WHERE u.email = 'demo@superbrain-studio.cn') AS "发帖数",
   (SELECT count(*) FROM daily_checkins dc JOIN users u ON u.id = dc.user_id
-     WHERE u.email = 'demo@superbrain-studio.cn') AS 签到天数,
+     WHERE u.email = 'demo@superbrain-studio.cn') AS "签到天数",
   (SELECT count(*) FROM friendships fr JOIN users u ON u.id IN (fr.a, fr.b)
-     WHERE u.email = 'demo@superbrain-studio.cn') AS 好友数,
+     WHERE u.email = 'demo@superbrain-studio.cn') AS "好友数",
   (SELECT user_points(u.id) FROM users u
-     WHERE u.email = 'demo@superbrain-studio.cn') AS 当前积分;
+     WHERE u.email = 'demo@superbrain-studio.cn') AS "当前积分";
