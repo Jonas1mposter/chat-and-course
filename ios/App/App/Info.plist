@@ -70,6 +70,14 @@
 	<string>https://superbrain-studio.cn/privacy</string>
 	<key>SupportURL</key>
 	<string>https://superbrain-studio.cn/support</string>
+	<key>NSCameraUsageDescription</key>
+	<string>用于拍摄照片或视频，上传课程封面与作品视频。</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>用于在拍摄视频时录制声音。</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>用于从相册中选择图片或视频上传。</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>用于将下载或拍摄的内容保存到相册。</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoadsInWebContent</key>
