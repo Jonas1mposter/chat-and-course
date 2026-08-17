@@ -36,7 +36,10 @@ function Index() {
   });
   const featured = courses.slice(0, 3);
   const hotPosts = posts.slice(0, 3);
-  const hero = courses[0];
+  const hero =
+    courses.find((c) => c.title.includes("AI时代实践课")) ??
+    courses.find((c) => c.title.includes("AI 时代实践课")) ??
+    courses[0];
 
   return (
     <main>
