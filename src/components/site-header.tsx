@@ -64,6 +64,10 @@ export function SiteHeader() {
                   {user.role === "admin" ? "管理员" : user.role === "teacher" ? "讲师" : "学员"}
                 </span>
               </span>
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/account">账号设置</Link>
+              </Button>
+
               <Button
                 variant="ghost"
                 size="sm"
