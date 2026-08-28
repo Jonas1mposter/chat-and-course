@@ -87,6 +87,20 @@ export function keyFromUrl(url) {
   }
 }
 
+/** 把默认 COS 域名换成自定义/CDN 加速域名（签名参数原样保留） */
+function withCdnHost(url) {
+  if (!COS_CDN_BASE) return url;
+  try {
+    const base = new URL(COS_CDN_BASE.replace(/\/$/, ""));
+    const u = new URL(url);
+    u.protocol = base.protocol;
+    u.host = base.host;
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
 /** 生成带签名的临时播放地址（默认 15 分钟有效，强制 inline 播放，禁止另存下载） */
 export function presignGetUrl(key, expiresSec = 900) {
   const c = getCOS();
@@ -104,7 +118,8 @@ export function presignGetUrl(key, expiresSec = 900) {
           "response-cache-control": "private, max-age=600",
         },
       },
-      (err, data) => (err ? reject(err) : resolve(data.Url)),
+      (err, data) => (err ? reject(err) : resolve(withCdnHost(data.Url))),
     );
   });
 }
+
