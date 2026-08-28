@@ -158,7 +158,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-background pb-10">
           <Toaster position="top-center" richColors />
           <SiteHeader />
           <Outlet />
@@ -181,6 +181,19 @@ function RootComponent() {
               </div>
             </div>
           </footer>
+        </div>
+        {/* 固定悬挂备案号：所有页面始终可见，满足审核要求 */}
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+          <div className="mx-auto flex h-10 max-w-6xl items-center justify-center px-6">
+            <a
+              href="https://beian.miit.gov.cn/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              沪ICP备2025139369号
+            </a>
+          </div>
         </div>
       </AuthProvider>
     </QueryClientProvider>
