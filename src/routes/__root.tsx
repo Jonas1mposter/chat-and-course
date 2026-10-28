@@ -39,7 +39,7 @@ function NotFoundComponent() {
 const CHUNK_ERROR_RE =
   /dynamically imported module|Importing a module script failed|Loading chunk|ChunkLoadError|module script failed|Unable to preload/i;
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: { error: any; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   const [recovering, setRecovering] = useState(false);

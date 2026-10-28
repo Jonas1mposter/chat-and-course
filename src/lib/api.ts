@@ -20,6 +20,12 @@ export class ApiError extends Error {
   }
 }
 
+function withPass(url: string): string {
+  const pass = getPass();
+  if (!pass) return url;
+  return `${url}${url.includes("?") ? "&" : "?"}pass=${encodeURIComponent(pass)}`;
+}
+
 export async function api<T = any>(
   path: string,
   opts: { method?: string; body?: any; auth?: boolean } = {},
@@ -34,9 +40,9 @@ export async function api<T = any>(
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     const tok = getToken();
     if (tok) headers.Authorization = `Bearer ${tok}`;
-    const pass = getPass();
-    if (pass) headers["x-abuse-pass"] = pass;
-    const res = await fetch(`${BASE}${path}`, {
+    // 注意：不能用自定义请求头传 pass —— 服务器 CORS 只放行 Content-Type/Authorization，
+    // 自定义头会让预检失败（iOS 显示 "Load failed"），所以改用 query 参数。
+    const res = await fetch(withPass(`${BASE}${path}`), {
       method: opts.method || "GET",
       headers,
       body: opts.body ? JSON.stringify(opts.body) : undefined,
@@ -88,10 +94,8 @@ export function uploadFile<T = { key: string; publicUrl: string; sizeBytes: numb
   const tok = getToken();
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", `${BASE}${path}`);
+    xhr.open("POST", withPass(`${BASE}${path}`));
     if (tok) xhr.setRequestHeader("Authorization", `Bearer ${tok}`);
-    const pass = getPass();
-    if (pass) xhr.setRequestHeader("x-abuse-pass", pass);
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable && onProgress) {
         onProgress(Math.round((e.loaded / e.total) * 100));

@@ -9,64 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TermsRouteImport } from './routes/terms'
-import { Route as SupportRouteImport } from './routes/support'
-import { Route as PrivacyRouteImport } from './routes/privacy'
-import { Route as LeaderboardRouteImport } from './routes/leaderboard'
-import { Route as FriendsRouteImport } from './routes/friends'
-import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as VideosIndexRouteImport } from './routes/videos.index'
-import { Route as DiscussionsIndexRouteImport } from './routes/discussions.index'
-import { Route as CoursesIndexRouteImport } from './routes/courses.index'
-import { Route as VideosNewRouteImport } from './routes/videos.new'
-import { Route as VideosVideoIdRouteImport } from './routes/videos.$videoId'
-import { Route as UUserIdRouteImport } from './routes/u.$userId'
-import { Route as DiscussionsNewRouteImport } from './routes/discussions.new'
-import { Route as DiscussionsPostIdRouteImport } from './routes/discussions.$postId'
-import { Route as CoursesNewRouteImport } from './routes/courses.new'
-import { Route as CoursesCourseIdRouteImport } from './routes/courses.$courseId'
-import { Route as AdminVideosRouteImport } from './routes/admin.videos'
-import { Route as AdminSetupRouteImport } from './routes/admin.setup'
+import { Route as AccountRouteImport } from './routes/account'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as FriendsRouteImport } from './routes/friends'
+import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as SupportRouteImport } from './routes/support'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminPasswordsRouteImport } from './routes/admin.passwords'
+import { Route as AdminSetupRouteImport } from './routes/admin.setup'
+import { Route as AdminVideosRouteImport } from './routes/admin.videos'
+import { Route as CoursesIndexRouteImport } from './routes/courses.index'
+import { Route as CoursesCourseIdRouteImport } from './routes/courses.$courseId'
+import { Route as CoursesNewRouteImport } from './routes/courses.new'
+import { Route as DiscussionsIndexRouteImport } from './routes/discussions.index'
+import { Route as DiscussionsPostIdRouteImport } from './routes/discussions.$postId'
+import { Route as DiscussionsNewRouteImport } from './routes/discussions.new'
+import { Route as UUserIdRouteImport } from './routes/u.$userId'
+import { Route as VideosIndexRouteImport } from './routes/videos.index'
+import { Route as VideosVideoIdRouteImport } from './routes/videos.$videoId'
+import { Route as VideosNewRouteImport } from './routes/videos.new'
 import { Route as CoursesCourseIdIndexRouteImport } from './routes/courses.$courseId.index'
 import { Route as CoursesCourseIdEditRouteImport } from './routes/courses.$courseId.edit'
 
-const TermsRoute = TermsRouteImport.update({
-  id: '/terms',
-  path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SupportRoute = SupportRouteImport.update({
-  id: '/support',
-  path: '/support',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PrivacyRoute = PrivacyRouteImport.update({
-  id: '/privacy',
-  path: '/privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LeaderboardRoute = LeaderboardRouteImport.update({
-  id: '/leaderboard',
-  path: '/leaderboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const FriendsRoute = FriendsRouteImport.update({
-  id: '/friends',
-  path: '/friends',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
-  id: '/forgot-password',
-  path: '/forgot-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AccountRoute = AccountRouteImport.update({
@@ -74,64 +44,44 @@ const AccountRoute = AccountRouteImport.update({
   path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VideosIndexRoute = VideosIndexRouteImport.update({
-  id: '/videos/',
-  path: '/videos/',
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DiscussionsIndexRoute = DiscussionsIndexRouteImport.update({
-  id: '/discussions/',
-  path: '/discussions/',
+const FriendsRoute = FriendsRouteImport.update({
+  id: '/friends',
+  path: '/friends',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CoursesIndexRoute = CoursesIndexRouteImport.update({
-  id: '/courses/',
-  path: '/courses/',
+const LeaderboardRoute = LeaderboardRouteImport.update({
+  id: '/leaderboard',
+  path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VideosNewRoute = VideosNewRouteImport.update({
-  id: '/videos/new',
-  path: '/videos/new',
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VideosVideoIdRoute = VideosVideoIdRouteImport.update({
-  id: '/videos/$videoId',
-  path: '/videos/$videoId',
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UUserIdRoute = UUserIdRouteImport.update({
-  id: '/u/$userId',
-  path: '/u/$userId',
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DiscussionsNewRoute = DiscussionsNewRouteImport.update({
-  id: '/discussions/new',
-  path: '/discussions/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DiscussionsPostIdRoute = DiscussionsPostIdRouteImport.update({
-  id: '/discussions/$postId',
-  path: '/discussions/$postId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CoursesNewRoute = CoursesNewRouteImport.update({
-  id: '/courses/new',
-  path: '/courses/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CoursesCourseIdRoute = CoursesCourseIdRouteImport.update({
-  id: '/courses/$courseId',
-  path: '/courses/$courseId',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminVideosRoute = AdminVideosRouteImport.update({
-  id: '/admin/videos',
-  path: '/admin/videos',
+const AdminPasswordsRoute = AdminPasswordsRouteImport.update({
+  id: '/admin/passwords',
+  path: '/admin/passwords',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminSetupRoute = AdminSetupRouteImport.update({
@@ -139,9 +89,59 @@ const AdminSetupRoute = AdminSetupRouteImport.update({
   path: '/admin/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminPasswordsRoute = AdminPasswordsRouteImport.update({
-  id: '/admin/passwords',
-  path: '/admin/passwords',
+const AdminVideosRoute = AdminVideosRouteImport.update({
+  id: '/admin/videos',
+  path: '/admin/videos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesIndexRoute = CoursesIndexRouteImport.update({
+  id: '/courses/',
+  path: '/courses/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesCourseIdRoute = CoursesCourseIdRouteImport.update({
+  id: '/courses/$courseId',
+  path: '/courses/$courseId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CoursesNewRoute = CoursesNewRouteImport.update({
+  id: '/courses/new',
+  path: '/courses/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscussionsIndexRoute = DiscussionsIndexRouteImport.update({
+  id: '/discussions/',
+  path: '/discussions/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscussionsPostIdRoute = DiscussionsPostIdRouteImport.update({
+  id: '/discussions/$postId',
+  path: '/discussions/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiscussionsNewRoute = DiscussionsNewRouteImport.update({
+  id: '/discussions/new',
+  path: '/discussions/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UUserIdRoute = UUserIdRouteImport.update({
+  id: '/u/$userId',
+  path: '/u/$userId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VideosIndexRoute = VideosIndexRouteImport.update({
+  id: '/videos/',
+  path: '/videos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VideosVideoIdRoute = VideosVideoIdRouteImport.update({
+  id: '/videos/$videoId',
+  path: '/videos/$videoId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VideosNewRoute = VideosNewRouteImport.update({
+  id: '/videos/new',
+  path: '/videos/new',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CoursesCourseIdIndexRoute = CoursesCourseIdIndexRouteImport.update({
@@ -340,53 +340,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/terms': {
-      id: '/terms'
-      path: '/terms'
-      fullPath: '/terms'
-      preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/support': {
-      id: '/support'
-      path: '/support'
-      fullPath: '/support'
-      preLoaderRoute: typeof SupportRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/privacy': {
-      id: '/privacy'
-      path: '/privacy'
-      fullPath: '/privacy'
-      preLoaderRoute: typeof PrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/leaderboard': {
-      id: '/leaderboard'
-      path: '/leaderboard'
-      fullPath: '/leaderboard'
-      preLoaderRoute: typeof LeaderboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/friends': {
-      id: '/friends'
-      path: '/friends'
-      fullPath: '/friends'
-      preLoaderRoute: typeof FriendsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/forgot-password': {
-      id: '/forgot-password'
-      path: '/forgot-password'
-      fullPath: '/forgot-password'
-      preLoaderRoute: typeof ForgotPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/account': {
@@ -396,88 +354,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/videos/': {
-      id: '/videos/'
-      path: '/videos'
-      fullPath: '/videos/'
-      preLoaderRoute: typeof VideosIndexRouteImport
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/discussions/': {
-      id: '/discussions/'
-      path: '/discussions'
-      fullPath: '/discussions/'
-      preLoaderRoute: typeof DiscussionsIndexRouteImport
+    '/friends': {
+      id: '/friends'
+      path: '/friends'
+      fullPath: '/friends'
+      preLoaderRoute: typeof FriendsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/courses/': {
-      id: '/courses/'
-      path: '/courses'
-      fullPath: '/courses/'
-      preLoaderRoute: typeof CoursesIndexRouteImport
+    '/leaderboard': {
+      id: '/leaderboard'
+      path: '/leaderboard'
+      fullPath: '/leaderboard'
+      preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/videos/new': {
-      id: '/videos/new'
-      path: '/videos/new'
-      fullPath: '/videos/new'
-      preLoaderRoute: typeof VideosNewRouteImport
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/videos/$videoId': {
-      id: '/videos/$videoId'
-      path: '/videos/$videoId'
-      fullPath: '/videos/$videoId'
-      preLoaderRoute: typeof VideosVideoIdRouteImport
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/u/$userId': {
-      id: '/u/$userId'
-      path: '/u/$userId'
-      fullPath: '/u/$userId'
-      preLoaderRoute: typeof UUserIdRouteImport
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/discussions/new': {
-      id: '/discussions/new'
-      path: '/discussions/new'
-      fullPath: '/discussions/new'
-      preLoaderRoute: typeof DiscussionsNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/discussions/$postId': {
-      id: '/discussions/$postId'
-      path: '/discussions/$postId'
-      fullPath: '/discussions/$postId'
-      preLoaderRoute: typeof DiscussionsPostIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/courses/new': {
-      id: '/courses/new'
-      path: '/courses/new'
-      fullPath: '/courses/new'
-      preLoaderRoute: typeof CoursesNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/courses/$courseId': {
-      id: '/courses/$courseId'
-      path: '/courses/$courseId'
-      fullPath: '/courses/$courseId'
-      preLoaderRoute: typeof CoursesCourseIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/videos': {
-      id: '/admin/videos'
-      path: '/admin/videos'
-      fullPath: '/admin/videos'
-      preLoaderRoute: typeof AdminVideosRouteImport
+    '/admin/passwords': {
+      id: '/admin/passwords'
+      path: '/admin/passwords'
+      fullPath: '/admin/passwords'
+      preLoaderRoute: typeof AdminPasswordsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/setup': {
@@ -487,11 +417,81 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/passwords': {
-      id: '/admin/passwords'
-      path: '/admin/passwords'
-      fullPath: '/admin/passwords'
-      preLoaderRoute: typeof AdminPasswordsRouteImport
+    '/admin/videos': {
+      id: '/admin/videos'
+      path: '/admin/videos'
+      fullPath: '/admin/videos'
+      preLoaderRoute: typeof AdminVideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses/': {
+      id: '/courses/'
+      path: '/courses'
+      fullPath: '/courses/'
+      preLoaderRoute: typeof CoursesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses/$courseId': {
+      id: '/courses/$courseId'
+      path: '/courses/$courseId'
+      fullPath: '/courses/$courseId'
+      preLoaderRoute: typeof CoursesCourseIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/courses/new': {
+      id: '/courses/new'
+      path: '/courses/new'
+      fullPath: '/courses/new'
+      preLoaderRoute: typeof CoursesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discussions/': {
+      id: '/discussions/'
+      path: '/discussions'
+      fullPath: '/discussions/'
+      preLoaderRoute: typeof DiscussionsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discussions/$postId': {
+      id: '/discussions/$postId'
+      path: '/discussions/$postId'
+      fullPath: '/discussions/$postId'
+      preLoaderRoute: typeof DiscussionsPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/discussions/new': {
+      id: '/discussions/new'
+      path: '/discussions/new'
+      fullPath: '/discussions/new'
+      preLoaderRoute: typeof DiscussionsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/u/$userId': {
+      id: '/u/$userId'
+      path: '/u/$userId'
+      fullPath: '/u/$userId'
+      preLoaderRoute: typeof UUserIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/videos/': {
+      id: '/videos/'
+      path: '/videos'
+      fullPath: '/videos/'
+      preLoaderRoute: typeof VideosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/videos/$videoId': {
+      id: '/videos/$videoId'
+      path: '/videos/$videoId'
+      fullPath: '/videos/$videoId'
+      preLoaderRoute: typeof VideosVideoIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/videos/new': {
+      id: '/videos/new'
+      path: '/videos/new'
+      fullPath: '/videos/new'
+      preLoaderRoute: typeof VideosNewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/courses/$courseId/': {
