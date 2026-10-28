@@ -25,7 +25,7 @@ export const Route = createFileRoute("/discussions/$postId")({
   ),
   errorComponent: ({ error }) => (
     <div className="mx-auto max-w-2xl px-6 py-24 text-center text-muted-foreground">
-      加载出错：{error.message}
+      加载出错：{error instanceof Error ? error.message : String(error)}
     </div>
   ),
 });
